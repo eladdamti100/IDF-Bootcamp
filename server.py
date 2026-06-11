@@ -90,15 +90,15 @@ def detect():
 
     use_llm = bool(opts.get("llm"))
     threat = bool(opts.get("threat_intel"))
-    is_windows = opts.get("os", "windows") != "linux"
 
     logs = []
     log = lambda m: logs.append(str(m))
     llm_fn = select_backend(log) if use_llm else None
 
     try:
+        # is_windows is omitted -> pipeline auto-detects the OS from the commands
         res = pipeline.analyze_csv(_rows_to_csv(rows), llm_fn=llm_fn,
-                                   is_windows=is_windows, threat_intel=threat, log=log)
+                                   threat_intel=threat, log=log)
     except Exception as e:
         return jsonify({"error": f"{type(e).__name__}: {e}", "logs": logs}), 500
 

@@ -424,9 +424,7 @@
           <div id="glassboxOpts" class="mt-3 flex flex-wrap items-center gap-4 text-[12px] text-slate-600 dark:text-slate-300">
             <label class="flex items-center gap-1.5"><input type="checkbox" id="gbLlm"> AI judge (gray-zone)</label>
             <label class="flex items-center gap-1.5"><input type="checkbox" id="gbTi"> Threat-intel (live)</label>
-            <select id="gbOs" class="rounded-lg border border-slate-300/50 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 py-1">
-              <option value="windows">Windows</option><option value="linux">Linux</option>
-            </select>
+            <span class="opacity-60">OS auto-detected</span>
           </div>
         </div>
 
@@ -1099,7 +1097,7 @@
       options: {
         llm: $('gbLlm') && $('gbLlm').checked,
         threat_intel: $('gbTi') && $('gbTi').checked,
-        os: ($('gbOs') && $('gbOs').value) || 'windows',
+        // OS is auto-detected server-side from the commands
       },
     };
     const resp = await fetch('/api/detect', {

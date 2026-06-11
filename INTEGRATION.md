@@ -33,7 +33,7 @@ Open http://127.0.0.1:5001, drop a CSV, keep **🛡️ GLASSBOX Engine** selecte
 - **AI judge (gray-zone)** — server-side LLM verifies only the ambiguous rows. Off by
   default (faster, precision-first; speed is `−1/sec` in the rubric).
 - **Threat-intel (live)** — abuse.ch URLhaus lookups, off the scored hot path.
-- **Windows / Linux** — controls normalization.
+- **OS** — auto-detected from the commands (no toggle); the tool always returns a verdict.
 
 ## Config
 

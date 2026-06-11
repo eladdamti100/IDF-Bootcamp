@@ -5,6 +5,7 @@ CSV -> [0] normalize -> [1] signatures / allowlist -> [2] heuristic score
     -> [4] kill-chain story.  Returns verdicts + per-row reasons + story + timing.
 """
 import csv
+import re
 import io
 from time import monotonic
 from . import normalize as nz
@@ -42,7 +43,24 @@ _SIG_INDEX = [(rx, t, tname, tac, sc) for (rx, t, tname, tac, sc) in
               [(s[0], s[1], s[2], s[3], s[4]) for s in _sig.SIGNATURES]]
 
 
-def analyze_csv(text_or_path, llm_fn=None, is_windows=True,
+_WIN_HINT = re.compile(r"\.exe\b|powershell|cmd\.exe|\breg\s+add|schtasks|hk(lm|cu)|"
+                       r"%\w+%|[a-z]:\\|\\windows|vssadmin|wmic|rundll32|certutil", re.I)
+_NIX_HINT = re.compile(r"/bin/|/etc/|/usr/|/home/|/tmp/|/var/|\bsudo\b|\bbash\b|"
+                       r"\bchmod\b|\bchown\b|crontab|\bsh\s+-c|/dev/", re.I)
+
+
+def detect_os(raw_rows):
+    """Auto-detect Windows vs Linux from the commands (majority vote), so the
+    tool always produces a verdict without the caller specifying an OS."""
+    win = nix = 0
+    for rr in raw_rows:
+        cmd = (rr.get("command_line") or "") + " " + (rr.get("process_name") or "")
+        win += len(_WIN_HINT.findall(cmd))
+        nix += len(_NIX_HINT.findall(cmd))
+    return win >= nix  # tie -> Windows (lowercasing is harmless for signatures)
+
+
+def analyze_csv(text_or_path, llm_fn=None, is_windows=None,
                 mal_threshold=MAL_THRESHOLD, benign_ceiling=BENIGN_CEILING,
                 threat_intel=False, log=print):
     start = monotonic()
@@ -56,6 +74,11 @@ def analyze_csv(text_or_path, llm_fn=None, is_windows=True,
     with f:
         reader = csv.DictReader(f)
         raw_rows = list(reader)
+
+    # OS is auto-detected from the dataset unless explicitly forced.
+    if is_windows is None:
+        is_windows = detect_os(raw_rows)
+        log(f"[os] auto-detected: {'Windows' if is_windows else 'Linux'}")
 
     rows = []
     for i, rr in enumerate(raw_rows):

@@ -42,11 +42,11 @@ def main():
     rows_meta = []
     for f in files:
         name = os.path.basename(f)
-        is_windows = "_windows" in name or name.endswith("windows.csv")
         with open(f, encoding="utf-8") as fh:
             raw = fh.read()
         t0 = monotonic()
-        res = pipeline.analyze_csv(raw, llm_fn=llm_fn, is_windows=is_windows,
+        # OS auto-detected by the pipeline (no is_windows passed)
+        res = pipeline.analyze_csv(raw, llm_fn=llm_fn,
                                    threat_intel=args.threat_intel, log=lambda *_: None)
         dt = monotonic() - t0
         out_path = os.path.join(args.out, name)
