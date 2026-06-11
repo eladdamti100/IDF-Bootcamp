@@ -68,8 +68,10 @@ def _b64_wrap_linux(cmd: str) -> str:
 
 
 def _env_indirection_linux(cmd: str) -> str:
-    # Hide a sensitive token (e.g. a path) behind an env var.
-    return f"X=$(printf %s '{cmd}'); eval \"$X\""
+    # Hide the command behind an env var. Escape single quotes the POSIX way
+    # ('\'') so commands containing quotes stay shell-valid.
+    safe = cmd.replace("'", "'\\''")
+    return f"X='{safe}'; eval \"$X\""
 
 
 def _powershell_b64(cmd: str) -> str:
