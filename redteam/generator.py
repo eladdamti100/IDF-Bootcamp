@@ -67,8 +67,8 @@ Hard requirements:
   standalone-obvious. Keep every command genuinely malicious.
 - Mix single-command attacks and multi-step chains.
 
-Return ONLY JSON, an array of exactly {n} objects:
-[{{"process_name": "...", "command_line": "...", "phase": "<one phase>", "rationale": "<why this command, how it hides>"}}]
+Return ONLY a JSON object with a "commands" array of exactly {n} items:
+{{"commands": [{{"process_name": "...", "command_line": "...", "phase": "<one phase>", "rationale": "<why this command, how it hides>"}}]}}
 """
     return system, user
 
@@ -88,8 +88,8 @@ installs, db queries, log inspection, deploys, monitoring).
 - Use plausible users/paths similar to user={ctx['luser']} so this blends with
   other activity. Nothing malicious.
 
-Return ONLY JSON, an array of {n} objects:
-[{{"process_name": "...", "command_line": "..."}}]
+Return ONLY a JSON object with a "commands" array of {n} items:
+{{"commands": [{{"process_name": "...", "command_line": "..."}}]}}
 """
     return system, user
 
@@ -97,10 +97,18 @@ Return ONLY JSON, an array of {n} objects:
 def _coerce_rows(data, label: str) -> list[dict]:
     """Normalize LLM JSON into our row dicts; tolerate dict-wrapped arrays."""
     if isinstance(data, dict):
-        for key in ("malicious", "benign", "commands", "rows", "items", "data"):
+        for key in ("commands", "malicious", "benign", "rows", "items", "data"):
             if isinstance(data.get(key), list):
                 data = data[key]
                 break
+        else:
+            # A single command object (some models ignore the array wrapper).
+            if "command_line" in data:
+                data = [data]
+            else:
+                # Fall back to the first list-valued field, if any.
+                lists = [v for v in data.values() if isinstance(v, list)]
+                data = lists[0] if lists else data
     if not isinstance(data, list):
         raise LLMUnavailable("Expected a JSON array of commands.")
     rows: list[dict] = []
