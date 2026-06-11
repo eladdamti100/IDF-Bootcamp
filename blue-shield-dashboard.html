@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<!--
+  ============================================================================
+  BLUE SHIELD — AI Process Threat Hunter
+  Red vs Blue Bootcamp Challenge | Single-file Blue Team Detection Dashboard
+  ----------------------------------------------------------------------------
+  - 100% self-contained: open this file directly in a browser, no build step.
+  - CDNs: Tailwind (styling), Lucide (icons), Papa Parse (CSV), Google Fonts.
+  - Detection runs locally (mock heuristic engine) by default so the tool works
+    offline during a live demo. A real Claude API integration is included and
+    activates when you paste an API key (see detectThreatsWithClaude()).
+  ============================================================================
+-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blue Shield — AI Process Threat Hunter</title>
+
+  <!-- Tailwind via CDN (class-based dark mode) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Papa Parse for robust CSV parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <!-- Fonts: Inter (sans) + Fira Code (mono) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script>
+    // Tailwind config: enable class-based dark mode + design tokens from the spec.
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            navy:    '#0F172A', // primary deep blue
+            slate2:  '#1E293B', // dark-mode surface
+            cyber:   '#06B6D4', // accent / electric blue
+            danger:  '#EF4444',
+            success: '#10B981',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['"Fira Code"', 'Consolas', 'monospace'],
+          },
+          boxShadow: {
+            card: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)',
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /* 8px-grid baseline + small niceties Tailwind doesn't cover inline */
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .mono { font-family: 'Fira Code', Consolas, monospace; }
+
+    /* Sticky table header */
+    .sticky-head th { position: sticky; top: 0; z-index: 10; }
+
+    /* Drag-over visual state for the dropzone */
+    #dropzone.dragover {
+      border-color: #06B6D4;
+      background-color: rgba(6, 182, 212, 0.08);
+      transform: scale(1.005);
+    }
+
+    /* Terminal / log viewer look for the narrative panel */
+    .terminal {
+      font-family: 'Fira Code', Consolas, monospace;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .cmd-token { color: #06B6D4; font-weight: 600; } /* highlighted command mentions */
+    .ts-token  { color: #64748B; }                    /* timestamps */
+
+    /* Spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { animation: spin 0.8s linear infinite; }
+
+    /* Custom scrollbar for the table region */
+    .scroll-area::-webkit-scrollbar { height: 10px; width: 10px; }
+    .scroll-area::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 8px; }
+    .dark .scroll-area::-webkit-scrollbar-thumb { background: #475569; }
+
+    /* Tooltip for truncated command lines */
+    .tip { position: relative; }
+    .tip:hover .tip-body { opacity: 1; visibility: visible; }
+    .tip-body {
+      opacity: 0; visibility: hidden; transition: opacity .15s;
+      position: absolute; left: 0; top: 100%; margin-top: 6px; z-index: 50;
+      max-width: 560px; white-space: pre-wrap; word-break: break-all;
+      padding: 8px 10px; border-radius: 8px;
+      background: #0F172A; color: #E2E8F0; font-size: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.35);
+    }
+  </style>
+</head>
+
+<body class="bg-white text-navy dark:bg-slate2 dark:text-slate-100 transition-colors duration-200 min-h-screen">
+
+  <!-- ========================================================================
+       1. HEADER
+  ========================================================================= -->
+  <header class="border-b border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-navy/80 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-[1600px] mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="h-11 w-11 rounded-xl bg-gradient-to-br from-cyber to-blue-600 grid place-items-center shadow-lg shadow-cyber/30">
+          <i data-lucide="shield-check" class="text-white" style="width:26px;height:26px"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-extrabold tracking-tight">
+            Blue Shield <span class="text-cyber">— AI Process Threat Hunter</span>
+          </h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+            Red vs Blue Bootcamp Challenge &nbsp;|&nbsp; Jun 11, 2026
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <span id="apiBadge" class="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+          <i data-lucide="cpu" style="width:14px;height:14px"></i>
+          <span id="apiBadgeText">Mock Engine</span>
+        </span>
+        <!-- Theme toggle -->
+        <button id="themeToggle" aria-label="Toggle dark mode"
+          class="h-10 w-10 grid place-items-center rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+          <i data-lucide="moon" class="block dark:hidden" style="width:20px;height:20px"></i>
+          <i data-lucide="sun" class="hidden dark:block text-amber-400" style="width:20px;height:20px"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-[1600px] mx-auto px-6 py-6 space-y-6">
+
+    <!-- ======================================================================
+         2. UPLOAD & CONTROL PANEL
+    ======================================================================= -->
+    <section aria-labelledby="upload-title" class="grid lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2">
+        <h2 id="upload-title" class="sr-only">Upload CSV</h2>
+        <div id="dropzone" tabindex="0" role="button" aria-label="Drag and drop your CSV or click to browse"
+          class="cursor-pointer border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-2xl p-10 text-center transition-all bg-slate-50/60 dark:bg-navy/40 hover:border-cyber focus:outline-none focus:ring-2 focus:ring-cyber">
+          <input id="fileInput" type="file" accept=".csv,text/csv" class="hidden" />
+          <div class="flex flex-col items-center gap-3 pointer-events-none">
+            <div class="h-14 w-14 rounded-full bg-cyber/10 grid place-items-center">
+              <i data-lucide="upload-cloud" class="text-cyber" style="width:30px;height:30px"></i>
+            </div>
+            <p class="font-semibold text-lg">Drag &amp; drop your CSV or click to browse</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400">
+              CSV only. Expected columns like <span class="mono text-cyber">process_name</span>, <span class="mono text-cyber">command_line</span>.
+            </p>
+          </div>
+        </div>
+
+        <!-- File chip -->
+        <div id="fileChip" class="hidden mt-3 flex items-center gap-3 text-sm bg-white dark:bg-navy border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 shadow-card">
+          <i data-lucide="file-spreadsheet" class="text-success" style="width:20px;height:20px"></i>
+          <span id="fileName" class="mono font-medium truncate"></span>
+          <span id="fileMeta" class="text-slate-400 ml-auto whitespace-nowrap"></span>
+          <button id="clearFile" aria-label="Remove file" class="text-slate-400 hover:text-danger transition">
+            <i data-lucide="x" style="width:18px;height:18px"></i>
+          </button>
+        </div>
+
+        <!-- Error state -->
+        <div id="errorBox" class="hidden mt-3 flex items-center gap-2 text-sm text-danger bg-danger/10 border border-danger/30 rounded-xl px-4 py-3">
+          <i data-lucide="alert-octagon" style="width:18px;height:18px"></i>
+          <span id="errorText">❌ Upload failed. Please check CSV format.</span>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="bg-white dark:bg-navy border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-card flex flex-col gap-4">
+        <div>
+          <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Detection Engine</label>
+          <select id="engineSelect" class="mt-1.5 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate2 px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-cyber focus:outline-none">
+            <option value="mock">⚡ Mock Heuristic Engine (offline, demo-ready)</option>
+            <option value="claude">🧠 Claude API (claude-opus-4-8)</option>
+          </select>
+        </div>
+
+        <!-- Claude key field (only relevant when Claude engine selected) -->
+        <div id="apiKeyWrap" class="hidden">
+          <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Anthropic API Key</label>
+          <input id="apiKey" type="password" placeholder="sk-ant-..."
+            class="mt-1.5 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate2 px-3 py-2 text-sm mono focus:ring-2 focus:ring-cyber focus:outline-none" />
+          <p class="mt-1.5 text-[11px] leading-snug text-amber-600 dark:text-amber-400 flex gap-1.5">
+            <i data-lucide="triangle-alert" style="width:14px;height:14px;flex:none;margin-top:1px"></i>
+            <span>Browser calls expose your key &amp; need CORS. Use a throwaway key for the demo and revoke it after.</span>
+          </p>
+        </div>
+
+        <button id="scanBtn" disabled
+          class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-cyber px-4 py-3 font-bold text-white shadow-lg shadow-cyber/30 hover:bg-cyan-500 disabled:opacity-40 disabled:cursor-not-allowed transition">
+          <i data-lucide="search" style="width:18px;height:18px"></i>
+          <span id="scanBtnText">🔍 Start AI Scan</span>
+        </button>
+
+        <button id="downloadBtn"
+          class="hidden w-full inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-2.5 font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+          <i data-lucide="download" style="width:18px;height:18px"></i>
+          Download Results
+        </button>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         3. REAL-TIME STATS DASHBOARD
+    ======================================================================= -->
+    <section aria-label="Scan statistics" class="grid sm:grid-cols-3 gap-4">
+      <!-- Card 1: total commands -->
+      <div class="bg-white dark:bg-navy border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-card">
+        <div class="flex items-center justify-between">
+          <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Total Commands Analyzed</p>
+          <i data-lucide="list-checks" class="text-slate-400" style="width:22px;height:22px"></i>
+        </div>
+        <p id="statTotal" class="mt-2 text-4xl font-extrabold tabular-nums text-slate-700 dark:text-slate-200">0</p>
+      </div>
+      <!-- Card 2: threats -->
+      <div class="bg-white dark:bg-navy border border-danger/30 rounded-2xl p-5 shadow-card">
+        <div class="flex items-center justify-between">
+          <p class="text-sm font-medium text-slate-500 dark:text-slate-400">🚨 Threats Detected</p>
+          <i data-lucide="shield-alert" class="text-danger" style="width:22px;height:22px"></i>
+        </div>
+        <p id="statThreats" class="mt-2 text-4xl font-extrabold tabular-nums text-danger">0</p>
+      </div>
+      <!-- Card 3: scan duration -->
+      <div class="bg-white dark:bg-navy border border-success/30 rounded-2xl p-5 shadow-card">
+        <div class="flex items-center justify-between">
+          <p class="text-sm font-medium text-slate-500 dark:text-slate-400">⚡ Scan Duration</p>
+          <i data-lucide="timer" class="text-success" style="width:22px;height:22px"></i>
+        </div>
+        <p id="statDuration" class="mt-2 text-4xl font-extrabold tabular-nums text-success">—</p>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         4. DETECTION RESULTS TABLE
+    ======================================================================= -->
+    <section aria-labelledby="results-title" class="bg-white dark:bg-navy border border-slate-200 dark:border-slate-700 rounded-2xl shadow-card overflow-hidden">
+      <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-3 justify-between">
+        <h2 id="results-title" class="font-bold text-lg flex items-center gap-2">
+          <i data-lucide="table-2" class="text-cyber" style="width:20px;height:20px"></i> Detection Results
+        </h2>
+        <div class="flex items-center gap-2 flex-1 sm:flex-none sm:w-auto w-full">
+          <!-- Search / filter -->
+          <div class="relative flex-1 sm:w-72">
+            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" style="width:16px;height:16px"></i>
+            <input id="searchInput" type="text" placeholder="Filter by process or command…"
+              class="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate2 focus:ring-2 focus:ring-cyber focus:outline-none" />
+          </div>
+          <!-- Status filter -->
+          <select id="statusFilter" class="text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate2 px-3 py-2 focus:ring-2 focus:ring-cyber focus:outline-none">
+            <option value="all">All</option>
+            <option value="malicious">🚨 Malicious</option>
+            <option value="benign">✅ Benign</option>
+          </select>
+          <!-- Sort by confidence -->
+          <button id="sortBtn" title="Sort by confidence"
+            class="inline-flex items-center gap-1 text-sm rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+            <i data-lucide="arrow-down-up" style="width:16px;height:16px"></i>
+            <span id="sortLabel">Conf</span>
+          </button>
+          <!-- Export filtered -->
+          <button id="exportBtn"
+            class="inline-flex items-center gap-1 text-sm rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+            <i data-lucide="file-down" style="width:16px;height:16px"></i> Export
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading overlay -->
+      <div id="loadingState" class="hidden p-12 text-center">
+        <i data-lucide="loader-circle" class="spinner text-cyber mx-auto" style="width:40px;height:40px"></i>
+        <p id="loadingText" class="mt-3 font-medium text-slate-500 dark:text-slate-400">🔄 AI scan in progress…</p>
+      </div>
+
+      <!-- Empty state -->
+      <div id="emptyState" class="p-12 text-center">
+        <i data-lucide="shield-question" class="text-slate-300 dark:text-slate-600 mx-auto" style="width:48px;height:48px"></i>
+        <p class="mt-3 font-medium text-slate-500 dark:text-slate-400">No threats detected yet. Upload a CSV to begin.</p>
+      </div>
+
+      <!-- Table -->
+      <div id="tableWrap" class="hidden scroll-area overflow-auto" style="max-height: 560px;">
+        <table class="w-full text-sm border-collapse">
+          <thead class="sticky-head">
+            <tr class="bg-slate-100 dark:bg-slate-800 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              <th class="px-4 py-3 font-semibold">Status</th>
+              <th class="px-4 py-3 font-semibold">Process</th>
+              <th class="px-4 py-3 font-semibold">Command Line</th>
+              <th class="px-4 py-3 font-semibold w-44">Confidence</th>
+              <th class="px-4 py-3 font-semibold text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div id="pagination" class="hidden p-3 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between text-sm">
+        <span id="pageInfo" class="text-slate-500 dark:text-slate-400"></span>
+        <div class="flex items-center gap-1">
+          <button id="prevPage" class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 transition">Prev</button>
+          <button id="nextPage" class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 transition">Next</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         5. ATTACK NARRATIVE PANEL
+    ======================================================================= -->
+    <section aria-labelledby="narrative-title"
+      class="rounded-2xl border-2 border-cyber/30 bg-gradient-to-br from-slate-50 to-cyan-50/40 dark:from-navy dark:to-slate2 shadow-card overflow-hidden">
+      <div class="p-4 border-b border-cyber/20 flex flex-wrap items-center justify-between gap-3">
+        <h2 id="narrative-title" class="font-bold text-lg flex items-center gap-2">
+          🔎 Reconstructed Attack Story
+        </h2>
+        <div class="flex items-center gap-3">
+          <div>
+            <label for="scenarioSelect" class="sr-only">Attack scenario guess</label>
+            <select id="scenarioSelect" class="text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate2 px-3 py-2 focus:ring-2 focus:ring-cyber focus:outline-none">
+              <option value="Ransomware">Ransomware</option>
+              <option value="Crypto Miner">Crypto Miner</option>
+              <option value="Lateral Movement">Lateral Movement</option>
+              <option value="Privilege Escalation">Privilege Escalation</option>
+              <option value="Data Exfiltration">Data Exfiltration</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid lg:grid-cols-3 gap-0">
+        <!-- Terminal narrative -->
+        <div class="lg:col-span-2 p-4">
+          <div class="rounded-xl bg-navy text-slate-200 p-4 h-72 overflow-auto scroll-area shadow-inner">
+            <div id="narrativeBody" class="terminal text-[13px]">
+<span class="ts-token">[--:--:--]</span> Awaiting scan. Upload a CSV and run the engine to reconstruct the attack chain.
+            </div>
+          </div>
+        </div>
+        <!-- Scenario confidence meter -->
+        <div class="p-4 border-t lg:border-t-0 lg:border-l border-cyber/20 flex flex-col justify-center gap-3">
+          <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Scenario Match Confidence</p>
+          <div class="flex items-end gap-2">
+            <span id="scenarioConf" class="text-4xl font-extrabold tabular-nums text-cyber">0%</span>
+          </div>
+          <div class="h-3 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+            <div id="scenarioBar" class="h-full bg-gradient-to-r from-cyber to-blue-500 transition-all duration-700" style="width:0%"></div>
+          </div>
+          <p id="scenarioHint" class="text-xs text-slate-400 leading-snug">
+            Run a scan to compute the dominant attack pattern from detected commands.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         6. FOOTER — scoring, team, submit, timer
+    ======================================================================= -->
+    <section class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-navy shadow-card p-5 grid lg:grid-cols-3 gap-5 items-center">
+      <!-- Scoring preview -->
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Scoring Preview</p>
+        <p id="scorePreview" class="mt-1 text-lg font-bold">
+          Expected Score: <span class="text-success">+0</span>
+          <span class="text-sm font-normal text-slate-400">(TP: 0, FP: 0, Scenario Bonus: 0)</span>
+        </p>
+      </div>
+
+      <!-- Team name -->
+      <div>
+        <label for="teamName" class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Team Name</label>
+        <input id="teamName" type="text" placeholder="e.g. Blue Falcons"
+          class="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate2 px-3 py-2 text-sm focus:ring-2 focus:ring-cyber focus:outline-none" />
+      </div>
+
+      <!-- Submit + timer -->
+      <div class="flex items-center gap-3 justify-end">
+        <div class="text-right">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Elapsed</p>
+          <p id="timer" class="mono text-lg font-bold tabular-nums">00:00</p>
+        </div>
+        <button id="submitBtn"
+          class="inline-flex items-center gap-2 rounded-xl bg-navy dark:bg-cyber text-white px-5 py-3 font-bold hover:opacity-90 transition shadow-lg">
+          <i data-lucide="send" style="width:18px;height:18px"></i> Submit to Judges
+        </button>
+      </div>
+    </section>
+
+    <p class="text-center text-xs text-slate-400 pb-4">
+      Blue Shield · built for the IDF Red vs Blue Bootcamp · all processing runs in your browser.
+    </p>
+  </main>
+
+  <!-- ========================================================================
+       DETAILS MODAL
+  ========================================================================= -->
+  <div id="modal" class="hidden fixed inset-0 z-50 grid place-items-center bg-black/50 backdrop-blur-sm p-4" role="dialog" aria-modal="true">
+    <div class="bg-white dark:bg-navy rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[85vh] overflow-auto scroll-area">
+      <div class="flex items-start justify-between gap-4">
+        <h3 class="font-bold text-lg flex items-center gap-2"><i data-lucide="file-search" class="text-cyber" style="width:20px;height:20px"></i> Detection Details</h3>
+        <button id="modalClose" aria-label="Close" class="text-slate-400 hover:text-danger"><i data-lucide="x" style="width:22px;height:22px"></i></button>
+      </div>
+      <div id="modalBody" class="mt-4 space-y-3 text-sm"></div>
+    </div>
+  </div>
+
+  <script>
+  /* ==========================================================================
+     APPLICATION LOGIC  (Vanilla JS, no framework)
+     Sections:  state → theme → upload → engines → render → narrative →
+                scoring → timer → modal → events
+  ========================================================================== */
+
+  // ---- Global state ------------------------------------------------------
+  const state = {
+    rows: [],          // raw parsed CSV rows
+    results: [],       // [{ process, command, malicious, confidence, reasons, scenario }]
+    filtered: [],      // results after search/status filter
+    page: 0,
+    pageSize: 20,
+    sortDesc: true,    // confidence sort direction
+    fileName: '',
+    startTime: null,
+    timerInterval: null,
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const refreshIcons = () => window.lucide && lucide.createIcons();
+
+  // ---- 1. THEME TOGGLE ---------------------------------------------------
+  const applyTheme = (dark) => {
+    document.documentElement.classList.toggle('dark', dark);
+    try { localStorage.setItem('bs-theme', dark ? 'dark' : 'light'); } catch (e) {}
+    refreshIcons();
+  };
+  // Respect saved preference, else OS preference.
+  (function initTheme() {
+    let saved = null;
+    try { saved = localStorage.getItem('bs-theme'); } catch (e) {}
+    const dark = saved ? saved === 'dark'
+      : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(dark);
+  })();
+  $('themeToggle').addEventListener('click', () =>
+    applyTheme(!document.documentElement.classList.contains('dark')));
+
+  // ---- 2. ENGINE SELECT (mock vs Claude) ---------------------------------
+  $('engineSelect').addEventListener('change', (e) => {
+    const isClaude = e.target.value === 'claude';
+    $('apiKeyWrap').classList.toggle('hidden', !isClaude);
+    $('apiBadgeText').textContent = isClaude ? 'Claude Opus 4.8' : 'Mock Engine';
+  });
+
+  // ---- 3. UPLOAD: drag/drop, click, parse --------------------------------
+  const dropzone = $('dropzone');
+  const fileInput = $('fileInput');
+
+  ['dragenter', 'dragover'].forEach(ev =>
+    dropzone.addEventListener(ev, (e) => { e.preventDefault(); dropzone.classList.add('dragover'); }));
+  ['dragleave', 'drop'].forEach(ev =>
+    dropzone.addEventListener(ev, (e) => { e.preventDefault(); dropzone.classList.remove('dragover'); }));
+
+  dropzone.addEventListener('drop', (e) => {
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  });
+  dropzone.addEventListener('click', () => fileInput.click());
+  dropzone.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
+  });
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files[0]) handleFile(e.target.files[0]);
+  });
+  $('clearFile').addEventListener('click', resetFile);
+
+  function showError(msg) {
+    $('errorText').textContent = msg || '❌ Upload failed. Please check CSV format.';
+    $('errorBox').classList.remove('hidden');
+  }
+  function hideError() { $('errorBox').classList.add('hidden'); }
+
+  function handleFile(file) {
+    hideError();
+    if (!file.name.toLowerCase().endsWith('.csv') && file.type !== 'text/csv') {
+      return showError('❌ Upload failed. Only .csv files are accepted.');
+    }
+    // Parse with Papa Parse — header row + skip blank lines.
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (res) => {
+        if (!res.data || !res.data.length) return showError('❌ Upload failed. CSV is empty.');
+        state.rows = normalizeRows(res.data);
+        if (!state.rows.length) {
+          return showError('❌ Could not find a command/process column. Check your CSV headers.');
+        }
+        state.fileName = file.name;
+        $('fileName').textContent = file.name;
+        $('fileMeta').textContent = `${state.rows.length} rows · ${(file.size / 1024).toFixed(1)} KB`;
+        $('fileChip').classList.remove('hidden');
+        $('scanBtn').disabled = false;
+        refreshIcons();
+      },
+      error: () => showError('❌ Upload failed. Please check CSV format.'),
+    });
+  }
+
+  // Map fuzzy CSV headers → {process, command, truth}. Flexible to Red Team naming.
+  function normalizeRows(data) {
+    const keys = Object.keys(data[0] || {});
+    const find = (cands) => keys.find(k => cands.some(c => k.toLowerCase().replace(/[^a-z]/g, '').includes(c)));
+    const cmdKey  = find(['commandline', 'command', 'cmd', 'cmdline', 'process']) || keys[0];
+    const procKey = find(['processname', 'process', 'image', 'exe', 'binary']) || cmdKey;
+    const truthKey = find(['label', 'truth', 'malicious', 'isthreat', 'groundtruth']);
+
+    return data.map((r) => {
+      const command = (r[cmdKey] || '').toString().trim();
+      let proc = (r[procKey] || '').toString().trim();
+      // Derive a process name from the command if no dedicated column.
+      if (!proc || proc === command) {
+        const m = command.match(/([\w.\-]+\.(?:exe|sh|py|bin|dll|ps1))/i) || command.match(/^[^\s]+/);
+        proc = m ? m[0].split(/[\\/]/).pop() : 'unknown';
+      }
+      const truthRaw = truthKey ? (r[truthKey] || '').toString().toLowerCase() : '';
+      const truth = truthKey
+        ? ['1', 'true', 'malicious', 'mal', 'yes', 'bad'].includes(truthRaw)
+        : null; // null = no ground truth available
+      return { process: proc, command, truth };
+    }).filter(r => r.command);
+  }
+
+  function resetFile() {
+    state.rows = []; state.results = []; state.filtered = [];
+    state.fileName = ''; fileInput.value = '';
+    $('fileChip').classList.add('hidden');
+    $('scanBtn').disabled = true;
+    $('downloadBtn').classList.add('hidden');
+    $('tableWrap').classList.add('hidden');
+    $('pagination').classList.add('hidden');
+    $('emptyState').classList.remove('hidden');
+    $('statTotal').textContent = '0';
+    $('statThreats').textContent = '0';
+    $('statDuration').textContent = '—';
+    stopTimer();
+    hideError();
+  }
+
+  // ---- 4a. MOCK HEURISTIC ENGINE -----------------------------------------
+  // Pattern-based scoring. Realistic enough to demo and to seed a narrative.
+  const SIGNATURES = [
+    { re: /(vssadmin|wbadmin).*(delete|resize)/i, w: 40, tag: 'Shadow copy deletion', scenario: 'Ransomware' },
+    { re: /cipher\s+\/w|\.locked|\.encrypted|readme.*decrypt/i, w: 38, tag: 'Encryption / ransom note', scenario: 'Ransomware' },
+    { re: /(xmrig|minerd|stratum\+tcp|monero|nicehash)/i, w: 45, tag: 'Crypto miner', scenario: 'Crypto Miner' },
+    { re: /(psexec|wmic\s+\/node|winrm|\\\\[\w.]+\\admin\$)/i, w: 35, tag: 'Remote execution', scenario: 'Lateral Movement' },
+    { re: /(whoami\s+\/priv|getsystem|sebackupprivilege|sudo\s+-l|pkexec)/i, w: 30, tag: 'Privilege check/escalation', scenario: 'Privilege Escalation' },
+    { re: /(curl|wget|Invoke-WebRequest|certutil\s+-urlcache).*(http|ftp)/i, w: 28, tag: 'Remote download', scenario: 'Data Exfiltration' },
+    { re: /(scp|rclone|aws\s+s3\s+cp|Compress-Archive).*(exfil|backup|dump|\.zip|\.tar)/i, w: 34, tag: 'Data staging/exfil', scenario: 'Data Exfiltration' },
+    { re: /-enc\s+[A-Za-z0-9+/=]{20,}|FromBase64String|powershell.*-nop.*-w\s+hidden/i, w: 36, tag: 'Encoded/obfuscated PowerShell', scenario: 'Lateral Movement' },
+    { re: /(nc|ncat|netcat).*(-e|-c)|\/dev\/tcp\//i, w: 33, tag: 'Reverse shell', scenario: 'Lateral Movement' },
+    { re: /(schtasks\s+\/create|reg\s+add.*\\run|crontab|systemctl\s+enable)/i, w: 22, tag: 'Persistence', scenario: 'Privilege Escalation' },
+    { re: /(mimikatz|lsass|sekurlsa|procdump.*lsass)/i, w: 42, tag: 'Credential dumping', scenario: 'Lateral Movement' },
+  ];
+
+  function mockDetect(rows) {
+    return rows.map((r) => {
+      let score = 0; const reasons = []; const scenarios = {};
+      for (const sig of SIGNATURES) {
+        if (sig.re.test(r.command)) {
+          score += sig.w;
+          reasons.push(sig.tag);
+          scenarios[sig.scenario] = (scenarios[sig.scenario] || 0) + sig.w;
+        }
+      }
+      // Mild deterministic jitter from command length so benign rows vary.
+      const jitter = (r.command.length % 11);
+      let confidence = Math.min(99, score > 0 ? score + 45 + jitter : Math.max(2, jitter));
+      const malicious = confidence >= 50;
+      const scenario = Object.keys(scenarios).sort((a, b) => scenarios[b] - scenarios[a])[0] || null;
+      return {
+        process: r.process, command: r.command, truth: r.truth,
+        malicious, confidence,
+        reasons: reasons.length ? reasons : ['No known malicious signature matched'],
+        scenario,
+      };
+    });
+  }
+
+  // ---- 4b. CLAUDE API ENGINE ---------------------------------------------
+  // Correct, current request shape (model claude-opus-4-8, structured output).
+  // NOTE: Direct browser calls require the dangerous-direct-browser-access header
+  // AND expose your key client-side. For production, proxy this through a backend.
+  async function detectThreatsWithClaude(rows, apiKey) {
+    const sample = rows.slice(0, 200); // keep the prompt bounded for the demo
+    const numbered = sample.map((r, i) => `${i}\t${r.process}\t${r.command}`).join('\n');
+
+    const prompt =
+`You are a Blue Team SOC analyst. Classify each process command below as malicious or benign.
+Return ONLY JSON matching the schema. Columns are: index<TAB>process<TAB>command.
+
+${numbered}`;
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        // Required for direct browser usage (opts into the documented risk):
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-8',
+        max_tokens: 8000,
+        // Structured outputs guarantee parseable JSON (no prefill needed).
+        output_config: {
+          format: {
+            type: 'json_schema',
+            schema: {
+              type: 'object',
+              additionalProperties: false,
+              required: ['detections'],
+              properties: {
+                detections: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    additionalProperties: false,
+                    required: ['index', 'malicious', 'confidence', 'scenario', 'reason'],
+                    properties: {
+                      index: { type: 'integer' },
+                      malicious: { type: 'boolean' },
+                      confidence: { type: 'integer' },
+                      scenario: {
+                        type: 'string',
+                        enum: ['Ransomware', 'Crypto Miner', 'Lateral Movement',
+                               'Privilege Escalation', 'Data Exfiltration', 'None'],
+                      },
+                      reason: { type: 'string' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+
+    if (!response.ok) {
+      const txt = await response.text();
+      throw new Error(`Claude API ${response.status}: ${txt.slice(0, 200)}`);
+    }
+    const data = await response.json();
+    const textBlock = (data.content || []).find(b => b.type === 'text');
+    const parsed = JSON.parse(textBlock.text);
+
+    // Merge Claude verdicts back onto the rows by index.
+    const byIndex = {};
+    parsed.detections.forEach(d => { byIndex[d.index] = d; });
+    return sample.map((r, i) => {
+      const d = byIndex[i] || {};
+      return {
+        process: r.process, command: r.command, truth: r.truth,
+        malicious: !!d.malicious,
+        confidence: typeof d.confidence === 'number' ? d.confidence : 0,
+        reasons: [d.reason || 'No verdict returned'],
+        scenario: d.scenario && d.scenario !== 'None' ? d.scenario : null,
+      };
+    });
+  }
+
+  // ---- 4c. SCAN ORCHESTRATION --------------------------------------------
+  $('scanBtn').addEventListener('click', runScan);
+
+  async function runScan() {
+    if (!state.rows.length) return;
+    hideError();
+    const engine = $('engineSelect').value;
+    const apiKey = $('apiKey').value.trim();
+
+    if (engine === 'claude' && !apiKey) {
+      return showError('❌ Enter an Anthropic API key, or switch to the Mock Engine.');
+    }
+
+    // Loading UI
+    $('emptyState').classList.add('hidden');
+    $('tableWrap').classList.add('hidden');
+    $('pagination').classList.add('hidden');
+    $('loadingState').classList.remove('hidden');
+    $('loadingText').textContent = `🔄 AI scan in progress… analyzing ${state.rows.length} commands`;
+    refreshIcons();
+    startTimer();
+
+    const t0 = performance.now();
+    try {
+      if (engine === 'claude') {
+        state.results = await detectThreatsWithClaude(state.rows, apiKey);
+      } else {
+        // Tiny delay so the spinner reads as "work happening" in the demo.
+        await new Promise(r => setTimeout(r, 450));
+        state.results = mockDetect(state.rows);
+      }
+    } catch (err) {
+      $('loadingState').classList.add('hidden');
+      $('emptyState').classList.remove('hidden');
+      return showError('❌ ' + (err.message || 'Scan failed.'));
+    }
+    const duration = Math.round(performance.now() - t0);
+
+    // Stats
+    const threats = state.results.filter(r => r.malicious).length;
+    $('statTotal').textContent = state.results.length.toLocaleString();
+    $('statThreats').textContent = threats.toLocaleString();
+    $('statDuration').textContent = duration + ' ms';
+
+    $('loadingState').classList.add('hidden');
+    state.page = 0;
+    applyFilters();
+    buildNarrative();
+    updateScoring();
+    $('downloadBtn').classList.remove('hidden');
+    refreshIcons();
+  }
+
+  // ---- 5. FILTER / SORT / RENDER TABLE -----------------------------------
+  ['searchInput', 'statusFilter'].forEach(id =>
+    $(id).addEventListener('input', () => { state.page = 0; applyFilters(); }));
+  $('sortBtn').addEventListener('click', () => {
+    state.sortDesc = !state.sortDesc;
+    $('sortLabel').textContent = state.sortDesc ? 'Conf ↓' : 'Conf ↑';
+    applyFilters();
+  });
+  $('prevPage').addEventListener('click', () => { if (state.page > 0) { state.page--; renderTable(); } });
+  $('nextPage').addEventListener('click', () => {
+    if ((state.page + 1) * state.pageSize < state.filtered.length) { state.page++; renderTable(); }
+  });
+
+  function applyFilters() {
+    const q = $('searchInput').value.toLowerCase();
+    const status = $('statusFilter').value;
+    state.filtered = state.results
+      .filter(r => {
+        if (status === 'malicious' && !r.malicious) return false;
+        if (status === 'benign' && r.malicious) return false;
+        if (q && !(r.process.toLowerCase().includes(q) || r.command.toLowerCase().includes(q))) return false;
+        return true;
+      })
+      .sort((a, b) => state.sortDesc ? b.confidence - a.confidence : a.confidence - b.confidence);
+    renderTable();
+  }
+
+  function confColor(c) {
+    if (c > 80) return 'text-danger';
+    if (c >= 50) return 'text-orange-500';
+    return 'text-amber-500';
+  }
+  function confBar(c) {
+    if (c > 80) return 'bg-danger';
+    if (c >= 50) return 'bg-orange-500';
+    return 'bg-amber-400';
+  }
+  const esc = (s) => (s || '').replace(/[&<>"]/g, m =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+
+  function renderTable() {
+    const body = $('tableBody');
+    if (!state.filtered.length) {
+      $('tableWrap').classList.add('hidden');
+      $('pagination').classList.add('hidden');
+      $('emptyState').classList.remove('hidden');
+      $('emptyState').querySelector('p').textContent =
+        state.results.length ? 'No rows match your filter.' : 'No threats detected yet. Upload a CSV to begin.';
+      return;
+    }
+    $('emptyState').classList.add('hidden');
+    $('tableWrap').classList.remove('hidden');
+    $('pagination').classList.remove('hidden');
+
+    const start = state.page * state.pageSize;
+    const pageRows = state.filtered.slice(start, start + state.pageSize);
+
+    body.innerHTML = pageRows.map((r) => {
+      const idx = state.results.indexOf(r); // stable index for modal lookup
+      const rowTint = r.malicious ? 'bg-danger/5 hover:bg-danger/10' : 'odd:bg-slate-50/60 dark:odd:bg-white/[0.02] hover:bg-slate-100 dark:hover:bg-white/5';
+      const statusIcon = r.malicious
+        ? `<span class="inline-flex items-center gap-1.5 text-danger font-semibold"><i data-lucide="alert-triangle" style="width:16px;height:16px"></i>Malicious</span>`
+        : `<span class="inline-flex items-center gap-1.5 text-success font-semibold"><i data-lucide="check-circle-2" style="width:16px;height:16px"></i>Benign</span>`;
+      const cmdShort = r.command.length > 70 ? esc(r.command.slice(0, 70)) + '…' : esc(r.command);
+      return `
+        <tr class="border-b border-slate-100 dark:border-slate-800 ${rowTint} transition">
+          <td class="px-4 py-2.5 whitespace-nowrap">${statusIcon}</td>
+          <td class="px-4 py-2.5 mono font-medium text-cyber whitespace-nowrap">${esc(r.process)}</td>
+          <td class="px-4 py-2.5">
+            <span class="tip mono text-slate-600 dark:text-slate-300">${cmdShort}
+              <span class="tip-body mono">${esc(r.command)}</span>
+            </span>
+          </td>
+          <td class="px-4 py-2.5">
+            <div class="flex items-center gap-2">
+              <div class="flex-1 h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                <div class="h-full ${confBar(r.confidence)}" style="width:${r.confidence}%"></div>
+              </div>
+              <span class="mono text-xs font-bold ${confColor(r.confidence)} w-9 text-right">${r.confidence}%</span>
+            </div>
+          </td>
+          <td class="px-4 py-2.5 text-center">
+            <button data-detail="${idx}" class="text-slate-400 hover:text-cyber transition" aria-label="View details">
+              <i data-lucide="eye" style="width:18px;height:18px"></i>
+            </button>
+          </td>
+        </tr>`;
+    }).join('');
+
+    // Pagination info
+    const total = state.filtered.length;
+    const from = start + 1, to = Math.min(start + state.pageSize, total);
+    $('pageInfo').textContent = `Showing ${from}–${to} of ${total.toLocaleString()} (page ${state.page + 1} of ${Math.ceil(total / state.pageSize)})`;
+    $('prevPage').disabled = state.page === 0;
+    $('nextPage').disabled = to >= total;
+
+    // Wire detail buttons
+    body.querySelectorAll('[data-detail]').forEach(btn =>
+      btn.addEventListener('click', () => openModal(parseInt(btn.dataset.detail, 10))));
+    refreshIcons();
+  }
+
+  // ---- 6. ATTACK NARRATIVE -----------------------------------------------
+  function buildNarrative() {
+    const mal = state.results.filter(r => r.malicious)
+      .sort((a, b) => b.confidence - a.confidence);
+    const box = $('narrativeBody');
+
+    if (!mal.length) {
+      box.innerHTML = `<span class="ts-token">[${nowStamp()}]</span> Scan complete. No malicious commands detected in this dataset.`;
+      setScenario(null, 0);
+      return;
+    }
+
+    // Tally scenarios to pick the dominant attack story.
+    const tally = {};
+    mal.forEach(r => { if (r.scenario) tally[r.scenario] = (tally[r.scenario] || 0) + 1; });
+    const dominant = Object.keys(tally).sort((a, b) => tally[b] - tally[a])[0] || 'Lateral Movement';
+    const conf = Math.min(98, Math.round((tally[dominant] || 1) / mal.length * 100) + 30);
+
+    // Build a timestamped, syntax-highlighted log of the top events.
+    const base = Date.now() - mal.length * 4000;
+    let lines = [`<span class="ts-token">[${nowStamp()}]</span> Reconstructed chain — <span class="cmd-token">${esc(dominant)}</span> (${mal.length} malicious events):`, ''];
+    mal.slice(0, 12).forEach((r, i) => {
+      const ts = new Date(base + i * 4000).toTimeString().slice(0, 8);
+      lines.push(`<span class="ts-token">[${ts}]</span> <span class="cmd-token">${esc(r.process)}</span> → ${esc(r.command.slice(0, 90))}`);
+      lines.push(`          ↳ ${esc(r.reasons[0])} · confidence ${r.confidence}%`);
+    });
+    if (mal.length > 12) lines.push('', `<span class="ts-token">[…]</span> +${mal.length - 12} more malicious events truncated.`);
+    box.innerHTML = lines.join('\n');
+
+    // Auto-select dominant scenario in the dropdown + set meter.
+    $('scenarioSelect').value = ['Ransomware', 'Crypto Miner', 'Lateral Movement', 'Privilege Escalation', 'Data Exfiltration'].includes(dominant) ? dominant : 'Lateral Movement';
+    setScenario(dominant, conf);
+  }
+
+  function setScenario(name, conf) {
+    $('scenarioConf').textContent = conf + '%';
+    $('scenarioBar').style.width = conf + '%';
+    $('scenarioHint').textContent = name
+      ? `Dominant pattern: ${name}. Adjust the dropdown if your analysis differs.`
+      : 'No dominant malicious pattern found.';
+  }
+  $('scenarioSelect').addEventListener('change', updateScoring);
+  const nowStamp = () => new Date().toTimeString().slice(0, 8);
+
+  // ---- 7. SCORING --------------------------------------------------------
+  // If the CSV carried ground truth, compute real TP/FP. Otherwise estimate.
+  function updateScoring() {
+    if (!state.results.length) return;
+    const hasTruth = state.results.some(r => r.truth !== null);
+    let tp = 0, fp = 0, fn = 0;
+    if (hasTruth) {
+      state.results.forEach(r => {
+        if (r.malicious && r.truth) tp++;
+        else if (r.malicious && r.truth === false) fp++;
+        else if (!r.malicious && r.truth) fn++;
+      });
+    } else {
+      // No ground truth: treat high-confidence detections as presumed TPs.
+      tp = state.results.filter(r => r.malicious && r.confidence > 80).length;
+      fp = state.results.filter(r => r.malicious && r.confidence <= 80).length;
+    }
+    const scenarioBonus = parseInt($('scenarioConf').textContent) >= 60 ? 5 : 0;
+    const score = tp - fp + scenarioBonus; // simple competition-style scoring
+    const sign = score >= 0 ? '+' : '';
+    $('scorePreview').innerHTML =
+      `Expected Score: <span class="${score >= 0 ? 'text-success' : 'text-danger'}">${sign}${score}</span>
+       <span class="text-sm font-normal text-slate-400">(TP: ${tp}, FP: ${fp}, Scenario Bonus: ${scenarioBonus})</span>`;
+  }
+
+  // ---- 8. TIMER ----------------------------------------------------------
+  function startTimer() {
+    if (state.timerInterval) return; // keep running from first upload/scan
+    state.startTime = Date.now();
+    state.timerInterval = setInterval(() => {
+      const s = Math.floor((Date.now() - state.startTime) / 1000);
+      $('timer').textContent =
+        String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+    }, 1000);
+  }
+  function stopTimer() {
+    clearInterval(state.timerInterval); state.timerInterval = null;
+    $('timer').textContent = '00:00';
+  }
+
+  // ---- 9. MODAL ----------------------------------------------------------
+  function openModal(idx) {
+    const r = state.results[idx];
+    if (!r) return;
+    $('modalBody').innerHTML = `
+      <div class="grid grid-cols-2 gap-3">
+        <div class="col-span-2"><span class="text-slate-400 text-xs uppercase">Process</span><p class="mono text-cyber font-semibold">${esc(r.process)}</p></div>
+        <div class="col-span-2"><span class="text-slate-400 text-xs uppercase">Command Line</span><p class="mono break-all bg-slate-100 dark:bg-slate-800 rounded-lg p-2 mt-1">${esc(r.command)}</p></div>
+        <div><span class="text-slate-400 text-xs uppercase">Verdict</span><p class="font-bold ${r.malicious ? 'text-danger' : 'text-success'}">${r.malicious ? '🚨 Malicious' : '✅ Benign'}</p></div>
+        <div><span class="text-slate-400 text-xs uppercase">Confidence</span><p class="font-bold ${confColor(r.confidence)}">${r.confidence}%</p></div>
+        <div class="col-span-2"><span class="text-slate-400 text-xs uppercase">Likely Scenario</span><p class="font-medium">${esc(r.scenario || '—')}</p></div>
+        <div class="col-span-2"><span class="text-slate-400 text-xs uppercase">Signals</span>
+          <ul class="list-disc list-inside mt-1 space-y-0.5">${r.reasons.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+        </div>
+        ${r.truth !== null ? `<div class="col-span-2"><span class="text-slate-400 text-xs uppercase">Ground Truth</span><p>${r.truth ? '🚨 Malicious' : '✅ Benign'} ${r.malicious === r.truth ? '<span class="text-success">(correct)</span>' : '<span class="text-danger">(mismatch)</span>'}</p></div>` : ''}
+      </div>`;
+    $('modal').classList.remove('hidden');
+    refreshIcons();
+  }
+  $('modalClose').addEventListener('click', () => $('modal').classList.add('hidden'));
+  $('modal').addEventListener('click', (e) => { if (e.target === $('modal')) $('modal').classList.add('hidden'); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') $('modal').classList.add('hidden'); });
+
+  // ---- 10. EXPORT / DOWNLOAD ---------------------------------------------
+  function exportRows(rows, asJson, name) {
+    let blob;
+    if (asJson) {
+      blob = new Blob([JSON.stringify(rows, null, 2)], { type: 'application/json' });
+    } else {
+      const head = 'process,command,verdict,confidence,scenario,signals\n';
+      const csv = rows.map(r =>
+        [r.process, `"${(r.command || '').replace(/"/g, '""')}"`,
+         r.malicious ? 'malicious' : 'benign', r.confidence,
+         r.scenario || '', `"${r.reasons.join('; ')}"`].join(',')).join('\n');
+      blob = new Blob([head + csv], { type: 'text/csv' });
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+  // Download full results as JSON.
+  $('downloadBtn').addEventListener('click', () =>
+    exportRows(state.results, true, `blue-shield-results-${Date.now()}.json`));
+  // Export currently-filtered rows as CSV.
+  $('exportBtn').addEventListener('click', () => {
+    if (!state.filtered.length) return showError('❌ Nothing to export — run a scan first.');
+    exportRows(state.filtered, false, `blue-shield-filtered-${Date.now()}.csv`);
+  });
+
+  // ---- 11. SUBMIT --------------------------------------------------------
+  $('submitBtn').addEventListener('click', () => {
+    const team = $('teamName').value.trim();
+    if (!team) return showError('❌ Enter a team name before submitting.');
+    if (!state.results.length) return showError('❌ Run a scan before submitting.');
+    stopTimer();
+    const payload = {
+      team,
+      scenario: $('scenarioSelect').value,
+      scenarioConfidence: $('scenarioConf').textContent,
+      total: state.results.length,
+      threats: state.results.filter(r => r.malicious).length,
+      score: $('scorePreview').textContent.replace(/\s+/g, ' ').trim(),
+      submittedAt: new Date().toISOString(),
+    };
+    // In a real deployment this POSTs to the judges' endpoint.
+    console.log('SUBMIT →', payload);
+    alert(`✅ Submitted!\n\nTeam: ${team}\nScenario: ${payload.scenario} (${payload.scenarioConfidence})\nThreats: ${payload.threats}/${payload.total}\n\n(Payload logged to console — wire to the judges' API for the real run.)`);
+  });
+
+  // ---- Init icons --------------------------------------------------------
+  refreshIcons();
+  </script>
+</body>
+</html>
