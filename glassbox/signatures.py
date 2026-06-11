@@ -101,6 +101,27 @@ _SIG_DEFS = [
     (r"sudo\s+-n?\s*-l\b", "T1548.003", "Sudo Enumeration", "Privilege Escalation", 0.6),
     # Exfil/C2: beacon embedding host identity in the request
     (r"(curl|wget)\s+.*-d\s+\S*\$\((hostname|whoami|id|uname)\)", "T1041", "Exfiltration Over C2", "Exfiltration", 0.78),
+    # --- recall pass: precise attacker forms (target the malicious variant, not
+    #     the benign twin — e.g. `ps -eo`/`Where Status` not `ps aux`/`Where-Object`) ---
+    # Inline var-assign + eval is an obfuscation wrapper around a hidden command.
+    (r"\beval\s+[\"']?\$\w+", "T1140", "Eval Obfuscation", "Defense Evasion", 0.85),
+    # Linux recon (specific flags the attacker used; benign uses `ps aux`, no `ss/getent`)
+    (r"\bps\s+-eo\b", "T1057", "Process Discovery", "Discovery", 0.82),
+    (r"\bss\s+-\w*[tu]\w*p\w*\b", "T1049", "Network Connection Discovery", "Discovery", 0.82),
+    (r"getent\s+passwd", "T1087.001", "Account Discovery", "Discovery", 0.82),
+    # Windows recon (attacker-flavored forms; `Where Status` not benign `Where-Object`)
+    (r"\btasklist\s+/v\b", "T1057", "Process Discovery", "Discovery", 0.78),
+    (r"net\s+localgroup\s+administrators", "T1087.001", "Local Account Discovery", "Discovery", 0.8),
+    (r"net\s+view\s+/all", "T1018", "Remote System Discovery", "Discovery", 0.78),
+    (r"get-localuser\b|get-service\s*\|\s*where\s+status", "T1087", "Account/Service Discovery", "Discovery", 0.76),
+    (r"\bset\s*\|\s*findstr\s+/i\s+.*(token|secret|key)", "T1552", "Unsecured Credentials (env)", "Credential Access", 0.82),
+    # broadenings / fixes
+    (r"schtasks\b.{0,80}/create", "T1053.005", "Scheduled Task", "Persistence", 0.85),
+    (r">>\s*\S*\.ssh/authorized_keys", "T1098.004", "SSH Authorized Keys", "Persistence", 0.85),
+    (r"openssl\s+enc\s+-aes", "T1486", "Data Encrypted for Impact", "Impact", 0.82),
+    (r"touch\s+-r\b", "T1070.006", "Timestomp", "Defense Evasion", 0.76),
+    (r"install\s+-m\s*4755", "T1548.001", "Setuid Install", "Privilege Escalation", 0.82),
+    (r"gcore\s+-o\b", "T1003.007", "Proc Memory Dump", "Credential Access", 0.82),
 ]
 
 SIGNATURES = [
