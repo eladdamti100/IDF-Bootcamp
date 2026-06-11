@@ -31,8 +31,15 @@ def cross_row_boost(rows):
             continue  # only nudge gray-zone rows; never override confident calls
         boosted = r["score"]
         if disc_dense and i in disc_idx:
-            boosted = 1.0 - (1.0 - boosted) * (1.0 - 0.30)
-            r["reasons"].append(f"recon density ({len(disc_idx)} discovery cmds in dataset)")
+            if chain_active:
+                # confirmed multi-tactic campaign + clustered recon => the recon
+                # IS part of the attack (combination is malicious).
+                boosted = max(boosted, 0.9)
+                r["reasons"].append(
+                    f"clustered recon during active kill-chain ({len(disc_idx)} discovery cmds)")
+            else:
+                boosted = 1.0 - (1.0 - boosted) * (1.0 - 0.30)
+                r["reasons"].append(f"recon density ({len(disc_idx)} discovery cmds in dataset)")
         if chain_active and r["tactic"] and r["tactic"] in TACTIC_RANK:
             boosted = 1.0 - (1.0 - boosted) * (1.0 - 0.20)
             r["reasons"].append("extends active kill-chain")

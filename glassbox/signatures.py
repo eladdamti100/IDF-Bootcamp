@@ -105,6 +105,8 @@ _SIG_DEFS = [
     #     the benign twin — e.g. `ps -eo`/`Where Status` not `ps aux`/`Where-Object`) ---
     # Inline var-assign + eval is an obfuscation wrapper around a hidden command.
     (r"\beval\s+[\"']?\$\w+", "T1140", "Eval Obfuscation", "Defense Evasion", 0.85),
+    (r"eval\s+[\"']?\$\(", "T1140", "Deobfuscate/Decode (eval subshell)", "Defense Evasion", 0.85),
+    (r"\|\s*base64\s+-d\s*\|\s*(ba)?sh", "T1140", "Decode and Execute", "Defense Evasion", 0.9),
     # Linux recon (specific flags the attacker used; benign uses `ps aux`, no `ss/getent`)
     (r"\bps\s+-eo\b", "T1057", "Process Discovery", "Discovery", 0.82),
     (r"\bss\s+-\w*[tu]\w*p\w*\b", "T1049", "Network Connection Discovery", "Discovery", 0.82),
@@ -122,6 +124,12 @@ _SIG_DEFS = [
     (r"touch\s+-r\b", "T1070.006", "Timestomp", "Defense Evasion", 0.76),
     (r"install\s+-m\s*4755", "T1548.001", "Setuid Install", "Privilege Escalation", 0.82),
     (r"gcore\s+-o\b", "T1003.007", "Proc Memory Dump", "Credential Access", 0.82),
+    (r"/proc/\d+/mem\b|\bgdb\b\s+.*-p\s+\d", "T1003", "OS Credential Dumping (process memory)", "Credential Access", 0.85),
+    (r"pgrep\s+-\w*\s*\S*(keyring|ssh-agent|gpg-agent)", "T1003", "Credential Memory Access", "Credential Access", 0.8),
+    # Credential Access: browser / password-store credential theft (firefox logins
+    # etc. — the variant the cred-access scenario uses, previously missed).
+    (r"(logins\.json|key[34]\.db|cookies\.sqlite|signons\.sqlite|login\s*data|\.mozilla[\\/]firefox|chrome.*login\s*data)", "T1555.003", "Credentials from Web Browsers", "Credential Access", 0.85),
+    (r"(kwallet|gnome-keyring|\.password-store|security\s+find-generic-password)", "T1555", "Credentials from Password Stores", "Credential Access", 0.78),
 ]
 
 SIGNATURES = [
@@ -133,8 +141,8 @@ SIGNATURES = [
 # so these are tagged but NOT auto-flagged — they get a cross-row density boost.
 DISCOVERY = re.compile(
     r"\b(whoami|net\s+user|net\s+group|net\s+localgroup|systeminfo|tasklist|nltest|"
-    r"\bid\b|uname\s+-a|hostname|ps\s+aux|ps\s+-ef|netstat|ss\s+-|ifconfig|ip\s+a\b|"
-    r"arp\s+-a|cat\s+/etc/passwd|env\b|printenv|sudo\s+-l)\b", re.I)
+    r"\bid\b|uname\s+-a|hostname|ps\s+aux|ps\s+-e\w*|netstat|ss\s+-|ifconfig|ip\s+a\b|"
+    r"arp\s+-a|cat\s+/etc/passwd|getent\s+passwd|env\b|printenv|sudo\s+-l)\b", re.I)
 DISCOVERY_TECH = ("T1087/T1082/T1057", "System/Account/Process Discovery", "Discovery")
 
 # LOLBin names — WEAK feature only (admins use these). Never auto-flag.
@@ -161,6 +169,12 @@ BENIGN_ALLOW = [
         r"^node\s+\S+\.js\b",
         r"^make\b",
         r"^ssh\s+\S+@\S+$",
+        # canonical benign monitoring forms (suppress recon FPs). Deliberately
+        # narrow so attacker variants stay catchable: 'ps aux' but not 'ps -eo';
+        # 'tasklist /fo' but not 'tasklist /v'; plain 'systeminfo'.
+        r"^ps\s+aux\b",
+        r"^tasklist(\s+/(fo|nh)\b.*)?$",
+        r"^systeminfo\s*$",
     ]
 ]
 
