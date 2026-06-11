@@ -1,0 +1,4 @@
+# LLM is optional — the tool runs fully offline with --no-llm.
+# Install whichever provider matches the key from the 1Password item.
+anthropic>=0.40.0
+# openai>=1.40.0   # uncomment if the shared key is an OpenAI key
