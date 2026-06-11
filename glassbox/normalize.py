@@ -167,6 +167,9 @@ def normalize(command_line: str, is_windows: bool = True, max_iter: int = 5):
     if is_windows:
         cmd = cmd.lower()
     normalized = cmd.strip()
-    # compare on a whitespace/case-insensitive basis so trivial diffs don't false-fire
-    was_obfuscated = _MULTISPACE.sub(" ", raw.strip().lower()) != _MULTISPACE.sub(" ", normalized)
+    # compare case-insensitively on BOTH sides: on Linux `normalized` keeps its
+    # original case, so without lowering it too, a benign command with uppercase
+    # (e.g. a path like Documents/Finance) falsely looks obfuscated -> false positive.
+    was_obfuscated = (_MULTISPACE.sub(" ", raw.strip().lower())
+                      != _MULTISPACE.sub(" ", normalized.lower()))
     return normalized, was_obfuscated, decoded
