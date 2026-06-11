@@ -130,6 +130,22 @@ _SIG_DEFS = [
     # etc. — the variant the cred-access scenario uses, previously missed).
     (r"(logins\.json|key[34]\.db|cookies\.sqlite|signons\.sqlite|login\s*data|\.mozilla[\\/]firefox|chrome.*login\s*data)", "T1555.003", "Credentials from Web Browsers", "Credential Access", 0.85),
     (r"(kwallet|gnome-keyring|\.password-store|security\s+find-generic-password)", "T1555", "Credentials from Password Stores", "Credential Access", 0.78),
+    # --- backup-themed attack pass: offensive tradecraft hiding among backup jobs ---
+    # Lateral movement / remote exec (offensive tools, high precision)
+    (r"\bcrackmapexec\b|\bcme\s+smb\b|\bnetexec\b", "T1021.002", "Cred-Spray / Lateral (CrackMapExec)", "Lateral Movement", 0.9),
+    (r"\bat(\.exe)?\s+\\\\\S+", "T1053.002", "Remote Scheduled Task (at)", "Lateral Movement", 0.85),
+    # wmic remote process create — tolerate 'path win32_process' between node and call
+    (r"wmic(\.exe)?\s+/node:\S+\s+.*process\s+call\s+create", "T1047", "WMI Lateral Exec", "Lateral Movement", 0.9),
+    # Download-and-execute: curl/wget piped to a shell ANYWHERE in the line (incl.
+    # inside an ssh '...' remote command). Benign pipes go to head/jq/grep, not sh.
+    (r"(curl|wget)\b.*\|\s*(ba)?sh\b", "T1059.004", "Download and Execute", "Execution", 0.9),
+    # Hidden /tmp staging + source deletion (exfil prep masquerading as a backup)
+    (r"7z\s+a\s+.*-sdel\b", "T1560.001", "Archive + Delete Source (staging)", "Collection", 0.82),
+    (r"tar\b.*--remove-files", "T1560.001", "Archive + Delete Source (staging)", "Collection", 0.8),
+    (r"/tmp/\.[0-9a-f]{6,}/", "T1074.001", "Hidden /tmp Staging Dir", "Collection", 0.72),
+    # Encrypt-then-destroy original (ransomware / destruction tell)
+    (r"\bshred\s+-\w*u\w*\b", "T1485", "Data Destruction (shred)", "Impact", 0.8),
+    (r"gpg\b.*\b-c\b.*&&.*\bshred\b", "T1486", "Encrypt then Destroy Original", "Impact", 0.88),
 ]
 
 SIGNATURES = [
