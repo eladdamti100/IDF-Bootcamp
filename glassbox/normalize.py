@@ -14,6 +14,26 @@ _MULTISPACE = re.compile(r"\s{2,}")
 # decode threshold is low (12) because garbage decodes are rejected by the
 # printable-ratio check in safe_b64_decode; real -enc payloads are far longer.
 _B64_BLOB = re.compile(r"[A-Za-z0-9+/]{12,}={0,2}")
+_URL_RE = re.compile(r"\b[a-z][a-z0-9+.\-]{1,8}://\S+", re.I)
+
+
+def strip_urls(text: str) -> str:
+    """Remove URL tokens so their paths (which contain '/' — a base64 char) are
+    not mistaken for base64 blobs. Real -enc/decode payloads are never URLs."""
+    return _URL_RE.sub(" ", text)
+
+
+def looks_base64(s: str) -> bool:
+    """Reject URL-path / identifier runs that merely use the base64 charset.
+    Real base64 mixes character classes (and usually has uppercase) or '=' padding."""
+    s = s.rstrip("=")
+    if len(s) < 16:
+        return False
+    has_u = any(c.isupper() for c in s)
+    has_l = any(c.islower() for c in s)
+    has_d = any(c.isdigit() for c in s)
+    # lowercase-only runs (URL paths like /repos/platform/commits) -> False
+    return (has_u + has_l + has_d) >= 2 and has_u
 # env-var styles we can resolve trivially
 _WIN_VAR = re.compile(r"%([A-Za-z_][A-Za-z0-9_]*)%")
 
@@ -45,29 +65,38 @@ def _strip_path_traversal(cmd: str) -> str:
     return re.sub(r"\\[^\\/]+\\\.\.\\", "\\\\", cmd)
 
 
+def _ascii_printable_ratio(txt: str) -> float:
+    if not txt:
+        return 0.0
+    ok = sum(1 for c in txt if 0x20 <= ord(c) <= 0x7E or c in "\t\n\r")
+    return ok / len(txt)
+
+
 def _decode_bytes(raw: bytes) -> str:
     """Pick the right text encoding. PowerShell -enc is UTF-16LE (many null
-    bytes for ASCII text); plain base64 is usually UTF-8. Returns "" if neither
-    yields clean text."""
+    bytes for ASCII text); plain base64 is UTF-8. Requires the result to be
+    mostly *ASCII* printable — latin-1 maps every byte to a 'printable' char, so
+    we must NOT accept it, or random bytes (e.g. a mis-detected URL path) sneak
+    through. Returns "" if nothing yields clean ASCII text."""
     if not raw:
         return ""
     null_ratio = raw.count(0) / len(raw)
-    order = ("utf-16-le", "utf-8", "latin-1") if null_ratio > 0.20 else ("utf-8", "utf-16-le", "latin-1")
+    order = ("utf-16-le", "utf-8") if null_ratio > 0.20 else ("utf-8", "utf-16-le")
     for enc in order:
         try:
             txt = raw.decode(enc)
         except (UnicodeDecodeError, ValueError):
             continue
-        if not txt:
-            continue
-        printable = sum(c.isprintable() or c.isspace() for c in txt)
-        if printable / len(txt) > 0.85:
-            return txt.replace("\x00", "")
+        txt = txt.replace("\x00", "")
+        if txt and _ascii_printable_ratio(txt) > 0.90:
+            return txt
     return ""
 
 
 def safe_b64_decode(blob: str) -> str:
     """Decode a base64 blob defensively. Returns "" on any failure — never raises."""
+    if not looks_base64(blob):
+        return ""
     for variant in (blob, blob + "=" * (-len(blob) % 4)):
         try:
             raw = base64.b64decode(variant, validate=False)
@@ -80,7 +109,9 @@ def safe_b64_decode(blob: str) -> str:
 
 
 def find_b64_blobs(cmd: str):
-    return _B64_BLOB.findall(cmd)
+    # scan URL-stripped text so URL paths (which contain '/') aren't mistaken
+    # for base64, and keep only blobs that actually look like base64.
+    return [b for b in _B64_BLOB.findall(strip_urls(cmd)) if looks_base64(b)]
 
 
 def normalize(command_line: str, is_windows: bool = True, max_iter: int = 5):

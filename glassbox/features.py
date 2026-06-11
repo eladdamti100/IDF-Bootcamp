@@ -8,6 +8,7 @@ push borderline rows into the gray zone for the verifier rather than flagging.
 import math
 import re
 from . import signatures as sig
+from .normalize import strip_urls, looks_base64
 
 _OBF_CHARS = re.compile(r"[\^\"'`%$!]")
 _SPECIAL = re.compile(r"[^\w\s]")
@@ -41,25 +42,26 @@ def score_row(process_name: str, raw_cmd: str, norm_text: str, was_obfuscated: b
     """
     reasons = []
     technique = tactic = None
-
-    # --- confident benign: whole-command allowlist + clean ---
-    args = raw_cmd
     ent = shannon_entropy(norm_text)
-    if sig.is_allowlisted(norm_text) and not was_obfuscated and ent < 4.6:
-        return 0.02, "benign", ["allowlisted benign template"], None, None
 
     # --- confident malicious: signature hit (take the strongest) ---
+    # MUST run before the allowlist: a malicious `cat ~/.aws/credentials` or
+    # `type %USERPROFILE%\.aws\credentials` should never be suppressed by the
+    # generic cat/cp/type allowlist template.
     hits = sig.match_signatures(norm_text)
     if hits:
         hits.sort(key=lambda h: h[3], reverse=True)
         tid, tname, tac, sc = hits[0]
         technique, tactic = tid, tac
         reasons.append(f"signature: {tname} ({tid})")
-        # obfuscation on top of a signature only raises confidence
         if was_obfuscated:
             sc = min(0.99, sc + 0.02)
             reasons.append("also obfuscated (raw != normalized)")
         return sc, "malicious", reasons, technique, tactic
+
+    # --- confident benign: whole-command allowlist + clean (only if no signature) ---
+    if sig.is_allowlisted(norm_text) and not was_obfuscated and ent < 4.6:
+        return 0.02, "benign", ["allowlisted benign template"], None, None
 
     # --- heuristic gray-zone scoring via weak signals (noisy-OR) ---
     weights = []
@@ -84,7 +86,7 @@ def score_row(process_name: str, raw_cmd: str, norm_text: str, was_obfuscated: b
         weights.append(min(0.55, (ent - 4.8) * 0.4 + 0.3))
         reasons.append(f"high entropy {ent:.1f} (encoded/encrypted)")
 
-    if _B64.search(norm_text):
+    if any(looks_base64(b) for b in _B64.findall(strip_urls(norm_text))):
         weights.append(0.35)
         reasons.append("base64-shaped blob")
 

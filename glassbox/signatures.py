@@ -47,6 +47,7 @@ _SIG_DEFS = [
     (r"schtasks\s+/create", "T1053.005", "Scheduled Task", "Persistence", 0.85),
     (r"reg\s+add\s+hk(cu|lm)\\software\\microsoft\\windows\\currentversion\\run", "T1547.001", "Registry Run Keys", "Persistence", 0.88),
     (r"new-service\s+-name", "T1543.003", "Windows Service", "Persistence", 0.82),
+    (r"reg\s+add\s+\S*\\services\\\S+.*(imagepath|/d\s+\S+\.exe)", "T1543.003", "Service Registry Persistence", "Persistence", 0.82),
     (r"crontab\s+-|/etc/cron", "T1053.003", "Cron", "Persistence", 0.8),
     (r">>\s*~?/?\.bashrc|>>\s*~?/?\.ssh/authorized_keys", "T1546.004|T1098.004", "Unix Shell Config / SSH Keys", "Persistence", 0.85),
     (r"systemctl\s+enable\s+\S+\.service", "T1543.002", "Systemd Service", "Persistence", 0.72),
@@ -74,6 +75,32 @@ _SIG_DEFS = [
     (r"invoke-webrequest.*-method\s+post.*-infile|invoke-restmethod.*-infile", "T1041", "Exfil Over C2", "Exfiltration", 0.85),
     (r"curl\s+.*-f\s+['\"]?\w+=@|curl\s+--upload-file", "T1041", "Exfil Over HTTP", "Exfiltration", 0.82),
     (r"rclone\s+copy\s+\S+\s+\S+:", "T1567.002", "Exfil to Cloud", "Exfiltration", 0.85),
+    # --- expanded coverage (realistic Linux/Windows, low-FP) ---
+    # Impact: file encryption (ransomware) + backup/recovery destruction
+    (r"openssl\s+enc\s+.*-out\s+\S+\.(enc|locked|crypt)", "T1486", "Data Encrypted for Impact", "Impact", 0.88),
+    (r"gpg\s+(--?(c|symmetric|encrypt))\b.*\.(gpg|enc)", "T1486", "Data Encrypted for Impact", "Impact", 0.78),
+    (r"rm\s+-rf\s+\S*(/var/backups|/snapshots|/backup)", "T1490", "Inhibit System Recovery", "Impact", 0.85),
+    (r"(shred|wipe)\s+-\S*\s+\S*(backup|/var/backups|/snapshots)", "T1490", "Inhibit System Recovery", "Impact", 0.82),
+    # Defense Evasion: clear shell history + disable security tooling
+    (r"(truncate\s+-s\s*0|cat\s+/dev/null\s*>|rm\s+-f?)\s*\S*\.bash_history", "T1070.003", "Clear Command History", "Defense Evasion", 0.85),
+    (r">\s*~?/?\.bash_history|export\s+histfile=/dev/null|unset\s+histfile", "T1070.003", "Clear Command History", "Defense Evasion", 0.82),
+    (r"(systemctl\s+(stop|disable|mask)|service\s+\S+\s+stop|kill(all)?)\s+\S*(clamav|falcon|crowdstrike|auditd|apparmor|ufw|firewalld|osquery|wazuh|ossec|sentinel|defender)", "T1562.001", "Impair Defenses", "Defense Evasion", 0.88),
+    (r"setenforce\s+0|aa-disable|iptables\s+-F\b", "T1562.004", "Disable/Modify System Firewall", "Defense Evasion", 0.78),
+    # Credential Access: read secret files + harvest env secrets
+    (r"(cat|less|head|cp|tail|type|more|copy)\s+\S*[\\/](\.?aws[\\/]credentials|\.?ssh[\\/]id_(rsa|ed25519)|\.?docker[\\/]config\.json|\.?kube[\\/]config|\.netrc|\.npmrc)", "T1552.001", "Credentials In Files", "Credential Access", 0.82),
+    (r"(robocopy|xcopy|copy)\s+\S*[\\/]\.(aws|ssh|gnupg|config)\b", "T1552.001", "Credentials In Files", "Credential Access", 0.8),
+    (r"get-childitem.*-include\s+\S*(\.kdbx|\.pem|id_rsa|\.ppk|credential)|gci\s+.*-include\s+\S*(\.kdbx|\.pem)", "T1552.001", "Credential File Hunt", "Credential Access", 0.74),
+    (r"(cp|tar|rsync)\s+-?\S*\s*\S*/\.ssh\b", "T1552.004", "Private Keys", "Credential Access", 0.72),
+    (r"env\s*\|\s*grep\s+-?\w*\s*['\"]?[^'\"]*\b(token|secret|key|password|passwd|api[_-]?key|aws)\b", "T1552", "Unsecured Credentials", "Credential Access", 0.75),
+    (r"grep\s+-r\w*\s+['\"]?(password|secret|api[_-]?key|aws_secret)['\"]?\s+/", "T1552.001", "Credentials In Files", "Credential Access", 0.72),
+    # Discovery: credential/secret file hunt (more specific than generic recon)
+    (r"find\s+\S+.*-name\s+['\"]?(\*?\.(env|pem)|id_rsa|id_ed25519|credentials|\.npmrc|shadow|\*?\.kdbx)['\"]?", "T1083", "File and Directory Discovery", "Discovery", 0.68),
+    (r"find\s+/\s+-type\s+\w\s+-name\s+['\"]?(shares|backups)", "T1083", "File and Directory Discovery", "Discovery", 0.6),
+    # Persistence: allow flags between systemctl and enable (e.g. --user)
+    (r"systemctl(\s+--\w+)?\s+enable\s+\S+\.service", "T1543.002", "Systemd Service", "Persistence", 0.74),
+    (r"sudo\s+-n?\s*-l\b", "T1548.003", "Sudo Enumeration", "Privilege Escalation", 0.6),
+    # Exfil/C2: beacon embedding host identity in the request
+    (r"(curl|wget)\s+.*-d\s+\S*\$\((hostname|whoami|id|uname)\)", "T1041", "Exfiltration Over C2", "Exfiltration", 0.78),
 ]
 
 SIGNATURES = [

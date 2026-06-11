@@ -42,24 +42,45 @@ def cross_row_boost(rows):
 # scenario signatures: (name, predicate over the set of tactics+techniques present)
 def classify_scenario(flagged):
     tactics = {r["tactic"] for r in flagged if r["tactic"]}
+    tac_counts = Counter(r["tactic"] for r in flagged if r["tactic"])
     techs = " ".join((r["technique"] or "") for r in flagged) + " " + \
             " ".join(r["norm"] for r in flagged)
 
+    # 1) hard, unambiguous Impact signatures win outright
     if "T1496" in techs or "xmrig" in techs or "donate-level" in techs or "stratum" in techs:
         return "Crypto Miner"
-    if "T1490" in techs or "vssadmin delete shadows" in techs or "bcdedit" in techs or "T1485" in techs:
+    if any(t in techs for t in ("T1490", "T1486", "T1485")) or \
+       "vssadmin delete shadows" in techs or "bcdedit" in techs or ".enc" in techs or ".locked" in techs:
         return "Ransomware"
-    if ("Credential Access" in tactics and "Lateral Movement" in tactics):
+
+    # 2) tactic combinations that name a specific scenario
+    if "Credential Access" in tactics and "Lateral Movement" in tactics:
         return "Lateral Movement / Credential Theft"
     if ("Collection" in tactics or "T1560" in techs) and \
        ("Exfiltration" in tactics or "T1041" in techs or "T1567" in techs):
         return "Data Exfiltration"
-    if "Persistence" in tactics and ("/dev/tcp" in techs or "Reverse Shell" in techs):
-        return "Persistence / Backdoor"
-    if "Lateral Movement" in tactics:
-        return "Lateral Movement"
-    if tactics:
-        return "Targeted Intrusion (" + ", ".join(sorted(tactics, key=lambda t: TACTIC_RANK.get(t, 99))) + ")"
+
+    # 3) otherwise name by the most scenario-DEFINING tactic present. Ubiquitous
+    #    support tactics (Credential Access, Defense Evasion, Execution, Discovery)
+    #    appear in almost every kill-chain, so they only decide when nothing more
+    #    specific is present. Order = "climax" strength.
+    PRIORITY = [
+        ("Exfiltration", "Data Exfiltration"),
+        ("Collection", "Data Exfiltration"),
+        ("Lateral Movement", "Lateral Movement"),
+        ("Persistence", "Persistence / Backdoor"),
+        ("Command and Control", "Backdoor / C2"),
+        ("Privilege Escalation", "Privilege Escalation"),
+        ("Credential Access", "Credential Access"),
+    ]
+    for tac, name in PRIORITY:
+        if tac in tactics:
+            return name
+    if tac_counts:
+        top = tac_counts.most_common(1)[0][0]
+        return {"Execution": "Backdoor / Remote Execution",
+                "Discovery": "Reconnaissance / Discovery",
+                "Defense Evasion": "Defense Evasion"}.get(top, top)
     return "Inconclusive"
 
 

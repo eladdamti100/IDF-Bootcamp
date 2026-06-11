@@ -5,3 +5,7 @@ out/
 .venv/
 venv/
 .DS_Store
+
+# testbench detector output
+testbench/_preds/
+testbench/_preds_llm/
