@@ -114,6 +114,27 @@ def find_b64_blobs(cmd: str):
     return [b for b in _B64_BLOB.findall(strip_urls(cmd)) if looks_base64(b)]
 
 
+# Per-row OS inference so the engine needs NO global os flag — a single CSV may
+# mix Linux and Windows commands and each row is normalized correctly.
+_WIN_PROC = re.compile(r"\.(exe|ps1|bat|cmd|dll|vbs|scr)$", re.I)
+_WIN_HINTS = re.compile(
+    r"(?i)(powershell|pwsh|\bcmd(\.exe)?\b|certutil|rundll32|regsvr32|mshta|"
+    r"schtasks|\breg\b|wmic|bitsadmin|vssadmin|wevtutil|tasklist|findstr|"
+    r"robocopy|-encodedcommand|\b-enc\b|%[A-Za-z_]\w*%|[A-Za-z]:\\\\|\\\\\\\\)")
+
+
+def detect_os(process_name: str, command_line: str) -> bool:
+    """Return True if the row looks like Windows, else False (Linux).
+
+    Conservative: any clear Windows signal -> Windows; otherwise Linux (the
+    case-sensitive, safer default for *nix command text). Lets a single CSV mix
+    both OSes without any caller-supplied flag.
+    """
+    p = (process_name or "").strip().lower()
+    c = command_line or ""
+    return bool(_WIN_PROC.search(p) or _WIN_HINTS.search(p) or _WIN_HINTS.search(c))
+
+
 def normalize(command_line: str, is_windows: bool = True, max_iter: int = 5):
     """Return (normalized_text, was_obfuscated, decoded_payloads).
 

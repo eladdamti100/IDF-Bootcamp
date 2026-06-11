@@ -75,16 +75,19 @@ def analyze_csv(text_or_path, llm_fn=None, is_windows=None,
         reader = csv.DictReader(f)
         raw_rows = list(reader)
 
-    # OS is auto-detected from the dataset unless explicitly forced.
-    if is_windows is None:
-        is_windows = detect_os(raw_rows)
-        log(f"[os] auto-detected: {'Windows' if is_windows else 'Linux'}")
+    # OS is auto-detected PER ROW unless explicitly forced, so a single CSV may
+    # mix Linux and Windows commands. (Dataset-level guess kept only for the log.)
+    auto_os = is_windows is None
+    if auto_os:
+        lean = detect_os(raw_rows)
+        log(f"[os] auto-detect per-row (dataset leans {'Windows' if lean else 'Linux'})")
 
     rows = []
     for i, rr in enumerate(raw_rows):
         pname = (rr.get("process_name") or "").strip()
         cmd = (rr.get("command_line") or "").strip()
-        norm, was_obf, decoded = nz.normalize(cmd, is_windows=is_windows)
+        row_win = nz.detect_os(pname, cmd) if auto_os else is_windows
+        norm, was_obf, decoded = nz.normalize(cmd, is_windows=row_win)
         score, hint, reasons, tech, tac = ft.score_row(pname, cmd, norm, was_obf)
         tech_name = _technique_name_lookup(tech)
 
