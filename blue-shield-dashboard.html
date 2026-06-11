@@ -416,9 +416,18 @@
             Detection Engine
           </label>
           <select id="engineSelect" class="mt-2.5 w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-cyber focus:outline-none transition shadow-sm dark:shadow-md">
+            <option value="glassbox" selected>🛡️ GLASSBOX Engine (backend · normalize→signatures→MITRE story)</option>
             <option value="mock">⚡ Mock Heuristic Engine (offline, demo-ready)</option>
             <option value="claude">🧠 Claude API (claude-opus-4-8)</option>
           </select>
+          <!-- GLASSBOX options (server-side LLM judge — no key in the browser) -->
+          <div id="glassboxOpts" class="mt-3 flex flex-wrap items-center gap-4 text-[12px] text-slate-600 dark:text-slate-300">
+            <label class="flex items-center gap-1.5"><input type="checkbox" id="gbLlm"> AI judge (gray-zone)</label>
+            <label class="flex items-center gap-1.5"><input type="checkbox" id="gbTi"> Threat-intel (live)</label>
+            <select id="gbOs" class="rounded-lg border border-slate-300/50 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 py-1">
+              <option value="windows">Windows</option><option value="linux">Linux</option>
+            </select>
+          </div>
         </div>
 
         <!-- Claude key field -->
@@ -855,9 +864,11 @@
 
   // ---- 2. ENGINE SELECT (mock vs Claude) ---------------------------------
   $('engineSelect').addEventListener('change', (e) => {
-    const isClaude = e.target.value === 'claude';
-    $('apiKeyWrap').classList.toggle('hidden', !isClaude);
-    $('apiBadgeText').textContent = isClaude ? 'Claude Opus 4.8' : 'Mock Engine';
+    const v = e.target.value;
+    $('apiKeyWrap').classList.toggle('hidden', v !== 'claude');
+    const gb = $('glassboxOpts'); if (gb) gb.classList.toggle('hidden', v !== 'glassbox');
+    $('apiBadgeText').textContent =
+      v === 'claude' ? 'Claude Opus 4.8' : v === 'glassbox' ? 'GLASSBOX Engine' : 'Mock Engine';
   });
 
   // ---- 3. UPLOAD: drag/drop, click, parse --------------------------------
@@ -1065,6 +1076,51 @@
         reasons: reasons.length ? reasons : ['No known malicious signature matched'],
         scenario,
         phase,
+      };
+    });
+  }
+
+  // ---- 4a2. GLASSBOX BACKEND ENGINE --------------------------------------
+  // Calls our same-origin Flask backend (normalize -> signatures -> heuristic
+  // score -> threat-intel -> MITRE kill-chain story). The LLM judge runs
+  // server-side, so no API key is exposed in the browser. Returns rows in the
+  // exact shape the dashboard renders.
+  async function detectThreatsWithGlassbox(rows) {
+    const payload = {
+      rows: rows.map(r => ({ process_name: r.process, command_line: r.command })),
+      options: {
+        llm: $('gbLlm') && $('gbLlm').checked,
+        threat_intel: $('gbTi') && $('gbTi').checked,
+        os: ($('gbOs') && $('gbOs').value) || 'windows',
+      },
+    };
+    const resp = await fetch('/api/detect', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!resp.ok) {
+      let msg = `GLASSBOX backend ${resp.status}`;
+      try { const e = await resp.json(); if (e.error) msg += `: ${e.error}`; } catch (_) {}
+      throw new Error(msg + ' — is server.py running on :5001?');
+    }
+    const data = await resp.json();
+    // Stash the backend's authoritative story/scenario for the story panel.
+    state.glassbox = { scenario: data.scenario, narrative: data.narrative,
+                       timeline: data.timeline, elapsed: data.elapsed_sec, logs: data.logs };
+    const byIdx = {}; data.rows.forEach(d => { byIdx[d.row] = d; });
+    return rows.map((r, i) => {
+      const d = byIdx[i] || {};
+      const malicious = d.verdict === 'malicious';
+      return {
+        process: r.process, command: r.command, truth: r.truth,
+        malicious,
+        confidence: Math.round((d.score || 0) * 100),
+        reasons: (d.reasons && d.reasons.length) ? d.reasons : ['No malicious signal'],
+        // backend's overall scenario for malicious rows; lets the dominant-scenario UI pick it up
+        scenario: malicious ? (data.scenario && data.scenario !== 'Inconclusive' ? data.scenario : null) : null,
+        phase: malicious ? classifyPhase(r.command) : null,
+        technique: d.technique || null,
       };
     });
   }
@@ -1372,7 +1428,9 @@ syntax. Each array element is one paragraph.`;
 
     const t0 = performance.now();
     try {
-      if (engine === 'claude') {
+      if (engine === 'glassbox') {
+        state.results = await detectThreatsWithGlassbox(state.rows);
+      } else if (engine === 'claude') {
         state.results = await detectThreatsWithClaude(state.rows, apiKey);
       } else {
         // Tiny delay so the spinner reads as "work happening" in the demo.
