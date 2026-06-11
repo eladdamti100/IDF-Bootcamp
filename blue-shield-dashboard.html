@@ -938,9 +938,17 @@
   // Map fuzzy CSV headers → {process, command, truth}. Flexible to Red Team naming.
   function normalizeRows(data) {
     const keys = Object.keys(data[0] || {});
-    const find = (cands) => keys.find(k => cands.some(c => k.toLowerCase().replace(/[^a-z]/g, '').includes(c)));
-    const cmdKey  = find(['commandline', 'command', 'cmd', 'cmdline', 'process']) || keys[0];
-    const procKey = find(['processname', 'process', 'image', 'exe', 'binary']) || cmdKey;
+    const norm = (k) => k.toLowerCase().replace(/[^a-z]/g, '');
+    // Respect candidate PRIORITY: try exact normalized match for each candidate
+    // in order, then fall back to substring. (Avoids 'process_name' hijacking
+    // the command column via a loose 'process' substring match.)
+    const find = (cands) => {
+      for (const c of cands) { const k = keys.find(k => norm(k) === c); if (k) return k; }
+      for (const c of cands) { const k = keys.find(k => norm(k).includes(c)); if (k) return k; }
+      return null;
+    };
+    const cmdKey  = find(['commandline', 'command', 'cmdline', 'cmd']) || keys[1] || keys[0];
+    const procKey = find(['processname', 'process', 'image', 'exe', 'binary']) || keys[0];
     const truthKey = find(['label', 'truth', 'malicious', 'isthreat', 'groundtruth']);
 
     return data.map((r) => {
